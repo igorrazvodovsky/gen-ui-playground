@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   DataProvider,
   ActionProvider,
@@ -64,6 +64,17 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { componentRegistry } from "@/components/ui";
+
+type RenderTree = ReturnType<typeof useUIStream>["tree"];
+type StoredTree = NonNullable<RenderTree>;
+type RecentItem = {
+  id: string;
+  label: string;
+  tree: StoredTree;
+  createdAt: number;
+};
+
+const MAX_RECENT = 5;
 
 const INITIAL_DATA = {
   analytics: {
@@ -136,6 +147,12 @@ function DashboardContent() {
   const [activeWorkspace, setActiveWorkspace] = useState("Acme Corp");
   const [commandOpen, setCommandOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
+  const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
+  const [activeRecentId, setActiveRecentId] = useState<string | null>(null);
+  const [activeTree, setActiveTree] = useState<StoredTree | null>(null);
+  const generationIdRef = useRef(0);
+  const lastStoredGenerationRef = useRef(0);
+  const lastPromptRef = useRef<string | null>(null);
   const { tree, isStreaming, error, send } = useUIStream({
     api: "/api/generate",
     onError: (err) => console.error("Generation error:", err),
@@ -145,6 +162,10 @@ function DashboardContent() {
     async (value: string) => {
       const trimmed = value.trim();
       if (!trimmed || isStreaming) return;
+      generationIdRef.current += 1;
+      lastPromptRef.current = trimmed;
+      setActiveTree(null);
+      setActiveRecentId(null);
       setCommandOpen(false);
       setPrompt("");
       await send(trimmed, { data: INITIAL_DATA });
@@ -152,7 +173,39 @@ function DashboardContent() {
     [isStreaming, send],
   );
 
-  const hasElements = tree && Object.keys(tree.elements).length > 0;
+  const handleRecentSelect = useCallback((item: RecentItem) => {
+    setActiveTree(item.tree);
+    setActiveRecentId(item.id);
+  }, []);
+
+  useEffect(() => {
+    if (!tree || isStreaming) return;
+    if (!lastPromptRef.current) return;
+    if (lastStoredGenerationRef.current === generationIdRef.current) return;
+    if (Object.keys(tree.elements).length === 0) return;
+
+    const snapshot = JSON.parse(JSON.stringify(tree)) as StoredTree;
+    const id = `generation-${generationIdRef.current}`;
+    const item: RecentItem = {
+      id,
+      label: lastPromptRef.current,
+      tree: snapshot,
+      createdAt: Date.now(),
+    };
+
+    setRecentItems((items) => {
+      const next = [item, ...items.filter((existing) => existing.id !== id)];
+      return next.slice(0, MAX_RECENT);
+    });
+    setActiveRecentId(id);
+    setActiveTree(snapshot);
+    lastStoredGenerationRef.current = generationIdRef.current;
+  }, [isStreaming, tree]);
+
+  const displayTree = activeTree ?? tree;
+  const hasElements =
+    !!displayTree && Object.keys(displayTree.elements).length > 0;
+  const isStreamingDisplay = isStreaming && !activeTree;
 
   return (
     <div className="flex h-screen bg-background">
@@ -280,6 +333,39 @@ function DashboardContent() {
                       <span>Settings</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel>Recent</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {recentItems.length === 0 ? (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        disabled
+                        tooltip="No recent generations"
+                      >
+                        <Clock />
+                        <span>No recent generations</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ) : (
+                    recentItems.map((item) => (
+                      <SidebarMenuItem key={item.id}>
+                        <SidebarMenuButton
+                          tooltip={item.label}
+                          isActive={activeRecentId === item.id}
+                          onClick={() => handleRecentSelect(item)}
+                          disabled={isStreaming}
+                        >
+                          <Clock />
+                          <span>{item.label}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))
+                  )}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -447,11 +533,11 @@ function DashboardContent() {
                     <p className="text-sm text-muted-foreground">
                       Enter a prompt to generate a widget.
                     </p>
-                  ) : tree ? (
+                  ) : displayTree ? (
                     <Renderer
-                      tree={tree}
+                      tree={displayTree}
                       registry={componentRegistry}
-                      loading={isStreaming}
+                      loading={isStreamingDisplay}
                     />
                   ) : null}
                 </div>
@@ -461,7 +547,7 @@ function DashboardContent() {
                       View JSON
                     </summary>
                     <pre className="mt-2 max-h-96 overflow-auto rounded-md border border-border bg-background p-3 text-xs text-muted-foreground">
-                      {JSON.stringify(tree, null, 2)}
+                      {JSON.stringify(displayTree, null, 2)}
                     </pre>
                   </details>
                 )}

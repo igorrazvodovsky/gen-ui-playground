@@ -7,7 +7,9 @@
     "dev": "next dev --turbopack --port 3001",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint --max-warnings 0"
+    "lint": "eslint --max-warnings 0",
+    "test": "vitest",
+    "test:watch": "vitest --watch"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^3.0.13",
@@ -20,10 +22,15 @@
     "zod": "^4.0.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^22.10.0",
     "@types/react": "19.2.3",
     "@types/react-dom": "19.2.3",
     "eslint": "^9.39.1",
-    "typescript": "^5.7.2"
+    "jsdom": "^27.4.0",
+    "typescript": "^5.7.2",
+    "vitest": "^4.0.17"
   }
 }

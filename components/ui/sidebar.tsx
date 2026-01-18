@@ -85,7 +85,21 @@ const SidebarProvider = React.forwardRef<
 
     React.useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
-        if (event.key === SIDEBAR_KEYBOARD_SHORTCUT && (event.metaKey || event.ctrlKey)) {
+        const isCommand = event.metaKey || event.ctrlKey;
+        const target = event.target;
+        const isEditableTarget =
+          target instanceof HTMLElement &&
+          (target.isContentEditable ||
+            target.tagName === "INPUT" ||
+            target.tagName === "TEXTAREA" ||
+            target.tagName === "SELECT");
+
+        if (
+          event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
+          isCommand &&
+          !event.shiftKey &&
+          !isEditableTarget
+        ) {
           event.preventDefault();
           toggleSidebar();
         }
@@ -237,11 +251,13 @@ Sidebar.displayName = "Sidebar";
 
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
-  React.ComponentProps<typeof Button>
->(({ className, onClick, ...props }, ref) => {
+  React.ComponentProps<typeof Button> & {
+    tooltip?: string | React.ComponentProps<typeof TooltipContent> | false;
+  }
+>(({ className, onClick, tooltip, ...props }, ref) => {
   const { toggleSidebar } = useSidebar();
 
-  return (
+  const button = (
     <Button
       ref={ref}
       data-sidebar="trigger"
@@ -257,6 +273,25 @@ const SidebarTrigger = React.forwardRef<
       <PanelLeft />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
+  );
+
+  const resolvedTooltip =
+    tooltip === undefined ? "Toggle sidebar (⌘B / Ctrl+B)" : tooltip;
+
+  if (!resolvedTooltip) {
+    return button;
+  }
+
+  const tooltipProps =
+    typeof resolvedTooltip === "string"
+      ? { children: resolvedTooltip }
+      : resolvedTooltip;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipContent side="bottom" align="start" {...tooltipProps} />
+    </Tooltip>
   );
 });
 SidebarTrigger.displayName = "SidebarTrigger";

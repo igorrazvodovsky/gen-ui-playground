@@ -43,6 +43,11 @@ import {
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   BarChart,
   Bell,
   Calendar,
@@ -234,6 +239,13 @@ function DashboardContent() {
     onError: (err) => console.error("Generation error:", err),
   });
 
+  const isEditableTarget = useCallback((target: EventTarget | null) => {
+    if (!(target instanceof HTMLElement)) return false;
+    const tagName = target.tagName;
+    if (target.isContentEditable) return true;
+    return tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT";
+  }, []);
+
   const handlePromptSubmit = useCallback(
     async (value: string) => {
       const trimmed = value.trim();
@@ -286,6 +298,30 @@ function DashboardContent() {
     setActiveSystemViewId(null);
     lastStoredGenerationRef.current = generationIdRef.current;
   }, [isStreaming, tree]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return;
+      const isCommand = event.metaKey || event.ctrlKey;
+      if (!isCommand) return;
+
+      const key = event.key.toLowerCase();
+      if (key === "k") {
+        event.preventDefault();
+        setCommandOpen((open) => !open);
+        return;
+      }
+
+      if (key === "b" && event.shiftKey) {
+        if (isEditableTarget(event.target)) return;
+        event.preventDefault();
+        setRightSidebarOpen((open) => !open);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isEditableTarget]);
 
   const displayTree = activeTree ?? tree;
   const hasElements =
@@ -356,71 +392,6 @@ function DashboardContent() {
 
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel>Platform</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton isActive tooltip="Dashboard">
-                      <Home />
-                      <span>Dashboard</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton tooltip="Inbox">
-                      <Inbox />
-                      <span>Inbox</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton tooltip="Calendar">
-                      <Calendar />
-                      <span>Calendar</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton tooltip="Search">
-                      <Search />
-                      <span>Search</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarGroup>
-              <SidebarGroupLabel>Workspace</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton tooltip="Documents">
-                      <FileText />
-                      <span>Documents</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton tooltip="Analytics">
-                      <BarChart />
-                      <span>Analytics</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton tooltip="Team">
-                      <Users />
-                      <span>Team</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton tooltip="Settings">
-                      <Settings />
-                      <span>Settings</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarGroup>
-              <SidebarGroupLabel>Views</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {SYSTEM_VIEWS.map((view) => (
@@ -435,6 +406,32 @@ function DashboardContent() {
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
+                </SidebarMenu>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton tooltip="Analytics">
+                      <BarChart />
+                      <span>Analytics</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton tooltip="Team">
+                      <Users />
+                      <span>Approvals</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton tooltip="Documents">
+                      <FileText />
+                      <span>Documents</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton tooltip="Settings">
+                      <Settings />
+                      <span>Settings</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -554,18 +551,25 @@ function DashboardContent() {
             <div className="flex flex-1 justify-center px-4">
               <Popover open={commandOpen} onOpenChange={setCommandOpen}>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={commandOpen}
-                    className="w-full max-w-md justify-start gap-2 text-muted-foreground bg-transparent"
-                  >
-                    <Search className="size-4" />
-                    <span>{prompt || "Describe what you want..."}</span>
-                    <kbd className="pointer-events-none ml-auto hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                      <span className="text-xs">⌘</span>K
-                    </kbd>
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={commandOpen}
+                        className="w-full max-w-md justify-start gap-2 text-muted-foreground bg-transparent"
+                      >
+                        <Search className="size-4" />
+                        <span>{prompt || "Describe what you want..."}</span>
+                        <kbd className="pointer-events-none ml-auto hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                          <span className="text-xs">⌘</span>K
+                        </kbd>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" align="center">
+                      Command menu (⌘K / Ctrl+K)
+                    </TooltipContent>
+                  </Tooltip>
                 </PopoverTrigger>
                 <PopoverContent className="w-[400px] p-0" align="center">
                   <Command
@@ -608,15 +612,22 @@ function DashboardContent() {
 
             <div className="flex items-center gap-2">
               {!rightSidebarOpen && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setRightSidebarOpen(true)}
-                  className="h-8 w-8"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  <span className="sr-only">Expand sidebar</span>
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setRightSidebarOpen(true)}
+                      className="h-8 w-8"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      <span className="sr-only">Expand sidebar</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" align="end">
+                    Expand details (⌘⇧B / Ctrl+Shift+B)
+                  </TooltipContent>
+                </Tooltip>
               )}
             </div>
           </header>
@@ -668,15 +679,22 @@ function DashboardContent() {
         <div className={cn("flex h-full flex-col", !rightSidebarOpen && "hidden")}>
           <div className="flex items-center justify-between border-sidebar-border px-4 py-3">
             <h2 className="font-semibold text-sidebar-foreground">Details</h2>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setRightSidebarOpen(false)}
-              className="h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent"
-            >
-              <ChevronRight className="h-4 w-4" />
-              <span className="sr-only">Collapse details</span>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setRightSidebarOpen(false)}
+                  className="h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                  <span className="sr-only">Collapse details</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left" align="center">
+                Collapse details (⌘⇧B / Ctrl+Shift+B)
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           <div className="flex-1 space-y-6 overflow-auto p-4">

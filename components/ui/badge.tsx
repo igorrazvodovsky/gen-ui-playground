@@ -28,7 +28,7 @@ export function Badge({ element }: ComponentRenderProps) {
     warning: "#eab308",
     danger: "#ef4444",
     error: "#ef4444",
-    info: "var(--muted)",
+    info: "var(--muted-foreground)",
   };
 
   return (

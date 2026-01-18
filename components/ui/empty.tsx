@@ -14,7 +14,7 @@ export function Empty({ element }: ComponentRenderProps) {
         {title}
       </h3>
       {description && (
-        <p style={{ margin: 0, fontSize: 14, color: "var(--muted)" }}>
+        <p style={{ margin: 0, fontSize: 14, color: "var(--muted-foreground)" }}>
           {description}
         </p>
       )}

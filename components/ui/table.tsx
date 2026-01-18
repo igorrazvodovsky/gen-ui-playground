@@ -17,7 +17,11 @@ export function Table({ element }: ComponentRenderProps) {
     | undefined;
 
   if (!tableData || !Array.isArray(tableData)) {
-    return <div style={{ padding: 20, color: "var(--muted)" }}>No data</div>;
+    return (
+      <div style={{ padding: 20, color: "var(--muted-foreground)" }}>
+        No data
+      </div>
+    );
   }
 
   const formatCell = (value: unknown, format?: string | null) => {
@@ -69,7 +73,7 @@ export function Table({ element }: ComponentRenderProps) {
                   borderBottom: "1px solid var(--border)",
                   fontSize: 12,
                   fontWeight: 500,
-                  color: "var(--muted)",
+                  color: "var(--muted-foreground)",
                   textTransform: "uppercase",
                   letterSpacing: "0.05em",
                 }}

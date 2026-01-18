@@ -33,7 +33,9 @@ export function Metric({ element }: ComponentRenderProps) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      <span style={{ fontSize: 14, color: "var(--muted)" }}>{label}</span>
+      <span style={{ fontSize: 14, color: "var(--muted-foreground)" }}>
+        {label}
+      </span>
       <span style={{ fontSize: 32, fontWeight: 600 }}>{displayValue}</span>
       {(trend || trendValue) && (
         <span
@@ -44,7 +46,7 @@ export function Metric({ element }: ComponentRenderProps) {
                 ? "#22c55e"
                 : trend === "down"
                   ? "#ef4444"
-                  : "var(--muted)",
+                  : "var(--muted-foreground)",
           }}
         >
           {trend === "up" ? "+" : trend === "down" ? "-" : ""}

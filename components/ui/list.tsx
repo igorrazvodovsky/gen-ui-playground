@@ -10,7 +10,7 @@ export function List({ element, children }: ComponentRenderProps) {
   const listData = getByPath(data, dataPath) as Array<unknown> | undefined;
 
   if (!listData || !Array.isArray(listData)) {
-    return <div style={{ color: "var(--muted)" }}>No items</div>;
+    return <div style={{ color: "var(--muted-foreground)" }}>No items</div>;
   }
 
   return <div>{children}</div>;

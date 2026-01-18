@@ -10,7 +10,7 @@ export function Text({ element }: ComponentRenderProps) {
   };
   const colors: Record<string, string> = {
     default: "var(--foreground)",
-    muted: "var(--muted)",
+    muted: "var(--muted-foreground)",
     success: "#22c55e",
     warning: "#eab308",
     danger: "#ef4444",

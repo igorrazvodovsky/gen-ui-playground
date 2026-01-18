@@ -93,13 +93,17 @@ export function Chart({ element }: ComponentRenderProps) {
   const rawData = getByPath(data, dataPath) as RawChartDatum[] | undefined;
 
   if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
-    return <div style={{ padding: 20, color: "var(--muted)" }}>No data</div>;
+    return (
+      <div style={{ padding: 20, color: "var(--muted-foreground)" }}>
+        No data
+      </div>
+    );
   }
 
   const chartData = normalizeChartData(rawData);
   const chartType = type || "bar";
   const chartHeight = Math.max(180, height || 240);
-  const axisTick = { fill: "var(--muted)", fontSize: 12 };
+  const axisTick = { fill: "var(--muted-foreground)", fontSize: 12 };
   const gridColor = "var(--border)";
 
   let chartBody: ReactNode = null;

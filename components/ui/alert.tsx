@@ -23,7 +23,7 @@ export function Alert({ element }: ComponentRenderProps) {
   const resolvedMessage = useResolvedValue(message);
 
   const colors: Record<string, string> = {
-    info: "var(--muted)",
+    info: "var(--muted-foreground)",
     success: "#22c55e",
     warning: "#eab308",
     error: "#ef4444",

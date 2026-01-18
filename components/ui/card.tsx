@@ -38,7 +38,11 @@ export function Card({ element, children }: ComponentRenderProps) {
           )}
           {description && (
             <p
-              style={{ margin: "4px 0 0", fontSize: 14, color: "var(--muted)" }}
+              style={{
+                margin: "4px 0 0",
+                fontSize: 14,
+                color: "var(--muted-foreground)",
+              }}
             >
               {description}
             </p>

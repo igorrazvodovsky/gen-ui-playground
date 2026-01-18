@@ -28,7 +28,11 @@ export function RenderButton({
       border: "1px solid var(--border)",
     },
     danger: { background: "#dc2626", color: "#fff", border: "none" },
-    ghost: { background: "transparent", color: "var(--muted)", border: "none" },
+    ghost: {
+      background: "transparent",
+      color: "var(--muted-foreground)",
+      border: "none",
+    },
   };
   const sizes: Record<string, React.CSSProperties> = {
     sm: { padding: "6px 12px", fontSize: 12 },

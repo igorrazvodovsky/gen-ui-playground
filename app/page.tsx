@@ -135,6 +135,7 @@ const INITIAL_DATA = {
   form: {
     dateRange: "",
     region: "",
+    accountsSearch: "",
   },
   dashboard: {
     metrics: {
@@ -200,6 +201,96 @@ const INITIAL_DATA = {
       },
     ],
   },
+  accounts: {
+    summary: {
+      total: 24,
+      active: 18,
+      atRisk: 3,
+      renewalsThisQuarter: 6,
+    },
+    list: [
+      {
+        id: "acme-corp",
+        name: "Acme Corp",
+        owner: "Jamie Fox",
+        segment: "Enterprise",
+        status: "Active",
+        health: "Healthy",
+        arr: 125000,
+        renewalDate: "2025-06-15",
+      },
+      {
+        id: "globex",
+        name: "Globex",
+        owner: "Priya Shah",
+        segment: "Enterprise",
+        status: "At Risk",
+        health: "Watch",
+        arr: 98000,
+        renewalDate: "2025-05-02",
+      },
+      {
+        id: "umbrella-co",
+        name: "Umbrella Co",
+        owner: "Liam Carter",
+        segment: "Mid-Market",
+        status: "Active",
+        health: "Healthy",
+        arr: 47000,
+        renewalDate: "2025-08-19",
+      },
+      {
+        id: "initech",
+        name: "Initech",
+        owner: "Sofia Ramirez",
+        segment: "Mid-Market",
+        status: "Churn Risk",
+        health: "Critical",
+        arr: 32000,
+        renewalDate: "2025-04-05",
+      },
+      {
+        id: "soylent",
+        name: "Soylent",
+        owner: "Marcus Lee",
+        segment: "Enterprise",
+        status: "Active",
+        health: "Healthy",
+        arr: 156000,
+        renewalDate: "2025-11-30",
+      },
+      {
+        id: "stark-industries",
+        name: "Stark Industries",
+        owner: "Nina Patel",
+        segment: "Strategic",
+        status: "Active",
+        health: "Healthy",
+        arr: 210000,
+        renewalDate: "2025-09-12",
+      },
+      {
+        id: "wayne-enterprises",
+        name: "Wayne Enterprises",
+        owner: "Evan Reed",
+        segment: "Strategic",
+        status: "At Risk",
+        health: "Watch",
+        arr: 189000,
+        renewalDate: "2025-07-03",
+      },
+      {
+        id: "hooli",
+        name: "Hooli",
+        owner: "Sara Bennett",
+        segment: "Mid-Market",
+        status: "Active",
+        health: "Healthy",
+        arr: 54000,
+        renewalDate: "2025-10-21",
+      },
+    ],
+  },
 };
 
 const ACTION_HANDLERS = {
@@ -208,6 +299,12 @@ const ACTION_HANDLERS = {
   view_details: (params: Record<string, unknown>) =>
     alert(`Details: ${JSON.stringify(params)}`),
   apply_filter: () => alert("Applying filters..."),
+  filter_accounts: (params: Record<string, unknown>) => {
+    const status = typeof params?.status === "string" ? params.status : "all";
+    window.dispatchEvent(
+      new CustomEvent("accounts-filter", { detail: { status } }),
+    );
+  },
 };
 
 const WORKSPACES = ["Acme Corp", "Personal", "Team Project"];
@@ -633,10 +730,10 @@ function DashboardContent() {
             </div>
           </header>
 
-          <main className="flex-1 overflow-auto p-6">
+          <main className="flex-1 overflow-auto p-3">
             <div className="mx-auto max-w-6xl space-y-6">
 
-              <div className="p-6">
+              <div className="p-3">
                 {error && (
                   <div className="mb-4 rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
                     {error.message}

@@ -50,7 +50,7 @@ export function TextField({ element }: ComponentRenderProps) {
             errors.length > 0 ? "1px solid #ef4444" : "1px solid var(--border)",
           background: "var(--card)",
           color: "var(--foreground)",
-          fontSize: 16,
+          fontSize: 14,
           outline: "none",
         }}
       />

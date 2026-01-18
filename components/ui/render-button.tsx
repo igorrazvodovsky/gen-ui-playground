@@ -12,7 +12,7 @@ export function RenderButton({
     label: string;
     variant?: string | null;
     size?: string | null;
-    action?: { name: string } | string | null;
+    action?: { name: string; params?: Record<string, unknown> } | string | null;
     disabled?: boolean | null;
   };
 
@@ -23,6 +23,11 @@ export function RenderButton({
       border: "none",
     },
     secondary: {
+      background: "transparent",
+      color: "var(--foreground)",
+      border: "1px solid var(--border)",
+    },
+    outline: {
       background: "transparent",
       color: "var(--foreground)",
       border: "1px solid var(--border)",

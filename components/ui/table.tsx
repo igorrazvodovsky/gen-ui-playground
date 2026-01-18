@@ -16,9 +16,9 @@ export function Table({ element }: ComponentRenderProps) {
     | Array<Record<string, unknown>>
     | undefined;
 
-  if (!tableData || !Array.isArray(tableData)) {
+  if (!tableData || !Array.isArray(tableData) || tableData.length === 0) {
     return (
-      <div style={{ padding: 20, color: "var(--muted-foreground)" }}>
+      <div className="rounded-md border border-dashed border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
         No data
       </div>
     );
@@ -37,16 +37,7 @@ export function Table({ element }: ComponentRenderProps) {
     }
     if (format === "badge") {
       return (
-        <span
-          style={{
-            padding: "2px 8px",
-            borderRadius: 12,
-            fontSize: 12,
-            fontWeight: 500,
-            background: "var(--border)",
-            color: "var(--foreground)",
-          }}
-        >
+        <span className="inline-flex items-center rounded-full bg-muted/70 px-2.5 py-1 text-xs font-medium text-foreground">
           {String(value)}
         </span>
       );
@@ -55,53 +46,41 @@ export function Table({ element }: ComponentRenderProps) {
   };
 
   return (
-    <div>
+    <div className="w-full overflow-hidden">
       {title && (
-        <h4 style={{ margin: "0 0 16px", fontSize: 14, fontWeight: 600 }}>
-          {title}
-        </h4>
+        <div className="mb-3 text-sm font-semibold text-foreground">{title}</div>
       )}
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            {columns.map((col) => (
-              <th
-                key={col.key}
-                style={{
-                  textAlign: "left",
-                  padding: "12px 8px",
-                  borderBottom: "1px solid var(--border)",
-                  fontSize: 12,
-                  fontWeight: 500,
-                  color: "var(--muted-foreground)",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                }}
-              >
-                {col.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {tableData.map((row, i) => (
-            <tr key={i}>
+      <div className="w-full overflow-auto rounded-xl border border-border/80 bg-card/80 shadow-sm">
+        <table className="w-full min-w-[640px] border-collapse text-sm">
+          <thead className="bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
+            <tr>
               {columns.map((col) => (
-                <td
+                <th
                   key={col.key}
-                  style={{
-                    padding: "12px 8px",
-                    borderBottom: "1px solid var(--border)",
-                    fontSize: 14,
-                  }}
+                  className="px-4 py-3 text-left font-medium"
+                  scope="col"
                 >
-                  {formatCell(row[col.key], col.format)}
-                </td>
+                  {col.label}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-border/70">
+            {tableData.map((row, i) => (
+              <tr
+                key={i}
+                className="bg-card transition-colors hover:bg-muted/30"
+              >
+                {columns.map((col) => (
+                  <td key={col.key} className="px-4 py-3 align-middle">
+                    {formatCell(row[col.key], col.format)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

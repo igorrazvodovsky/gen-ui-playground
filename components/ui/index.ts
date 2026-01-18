@@ -51,6 +51,7 @@ export {
 } from "./popover";
 export { RenderButton } from "./render-button";
 export { Select } from "./select";
+export { Checkbox } from "./checkbox";
 export {
   Sidebar,
   SidebarContent,
@@ -101,11 +102,15 @@ export {
   TooltipProvider,
   TooltipTrigger,
 } from "./tooltip";
+export { DataTable } from "./data-table";
+export { Tabs } from "./tabs";
 
 import { Alert } from "./alert";
 import { Badge } from "./badge";
 import { Card } from "./card";
 import { Chart } from "./chart";
+import { Checkbox } from "./checkbox";
+import { DataTable } from "./data-table";
 import { DatePicker } from "./date-picker";
 import { Divider } from "./divider";
 import { Empty } from "./empty";
@@ -117,6 +122,7 @@ import { RenderButton } from "./render-button";
 import { Select } from "./select";
 import { Stack } from "./stack";
 import { Table } from "./table";
+import { Tabs } from "./tabs";
 import { Text } from "./text";
 import { TextField } from "./text-field";
 
@@ -126,6 +132,8 @@ export const componentRegistry = {
   Button: RenderButton,
   Card,
   Chart,
+  Checkbox,
+  DataTable,
   DatePicker,
   Divider,
   Empty,
@@ -136,6 +144,7 @@ export const componentRegistry = {
   Select,
   Stack,
   Table,
+  Tabs,
   Text,
   TextField,
 };

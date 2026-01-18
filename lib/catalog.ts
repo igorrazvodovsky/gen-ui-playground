@@ -82,6 +82,51 @@ export const dashboardCatalog = createCatalog({
       }),
       description: "Display tabular data",
     },
+    DataTable: {
+      props: z.object({
+        title: z.string().nullable(),
+        dataPath: z.string(),
+        columns: z.array(
+          z.object({
+            key: z.string(),
+            label: z.string(),
+            format: z
+              .enum(["text", "currency", "date", "badge"])
+              .nullable(),
+            sortable: z.boolean().nullable(),
+          }),
+        ),
+        enableSelection: z.boolean().nullable(),
+        searchPath: z.string().nullable(),
+        hideSearch: z.boolean().nullable(),
+        initialSort: z
+          .object({
+            key: z.string(),
+            direction: z.enum(["asc", "desc"]),
+          })
+          .nullable(),
+        searchKey: z.string().nullable(),
+        emptyMessage: z.string().nullable(),
+        filterField: z.string().nullable(),
+        filterEventName: z.string().nullable(),
+      }),
+      description:
+        "Interactive data table with sorting, filtering, and row selection",
+    },
+    Tabs: {
+      props: z.object({
+        items: z.array(
+          z.object({
+            value: z.string(),
+            label: z.string(),
+            action: z.string().nullable(),
+            params: z.record(z.any()).nullable(),
+          }),
+        ),
+        defaultValue: z.string().nullable(),
+      }),
+      description: "Tabbed switcher with optional actions on tab change",
+    },
 
     List: {
       props: z.object({
@@ -96,7 +141,9 @@ export const dashboardCatalog = createCatalog({
     Button: {
       props: z.object({
         label: z.string(),
-        variant: z.enum(["primary", "secondary", "danger", "ghost"]).nullable(),
+        variant: z
+          .enum(["primary", "secondary", "danger", "ghost", "outline"])
+          .nullable(),
         size: z.enum(["sm", "md", "lg"]).nullable(),
         action: z.string(),
         disabled: z.boolean().nullable(),
@@ -212,6 +259,7 @@ export const dashboardCatalog = createCatalog({
     refresh_data: { description: "Refresh all metrics and charts" },
     view_details: { description: "View detailed information" },
     apply_filter: { description: "Apply the current filter settings" },
+    filter_accounts: { description: "Filter accounts table by status" },
   },
   validation: "strict",
 });

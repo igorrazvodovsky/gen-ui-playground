@@ -219,7 +219,7 @@ const dashboardTree: UITree = {
       props: {
         label: "Last 3 months",
         action: "apply_filter",
-        variant: "secondary",
+        variant: "outline",
         size: "sm",
       },
     },
@@ -275,56 +275,35 @@ const dashboardTree: UITree = {
     },
     "documents-tabs": {
       key: "documents-tabs",
-      type: "Stack",
+      type: "Tabs",
       props: {
-        direction: "horizontal",
-        gap: "sm",
-      },
-      children: [
-        "tab-outline",
-        "tab-performance",
-        "tab-personnel",
-        "tab-focus",
-      ],
-    },
-    "tab-outline": {
-      key: "tab-outline",
-      type: "Button",
-      props: {
-        label: "Outline",
-        action: "view_details",
-        variant: "secondary",
-        size: "sm",
-      },
-    },
-    "tab-performance": {
-      key: "tab-performance",
-      type: "Button",
-      props: {
-        label: "Past Performance",
-        action: "view_details",
-        variant: "ghost",
-        size: "sm",
-      },
-    },
-    "tab-personnel": {
-      key: "tab-personnel",
-      type: "Button",
-      props: {
-        label: "Key Personnel",
-        action: "view_details",
-        variant: "ghost",
-        size: "sm",
-      },
-    },
-    "tab-focus": {
-      key: "tab-focus",
-      type: "Button",
-      props: {
-        label: "Focus Documents",
-        action: "view_details",
-        variant: "ghost",
-        size: "sm",
+        defaultValue: "outline",
+        items: [
+          {
+            value: "outline",
+            label: "Outline",
+            action: "view_details",
+            params: { tab: "Outline" },
+          },
+          {
+            value: "performance",
+            label: "Past Performance",
+            action: "view_details",
+            params: { tab: "Past Performance" },
+          },
+          {
+            value: "personnel",
+            label: "Key Personnel",
+            action: "view_details",
+            params: { tab: "Key Personnel" },
+          },
+          {
+            value: "focus",
+            label: "Focus Documents",
+            action: "view_details",
+            params: { tab: "Focus Documents" },
+          },
+        ],
       },
     },
     "documents-actions": {
@@ -340,9 +319,9 @@ const dashboardTree: UITree = {
       key: "customize-columns",
       type: "Button",
       props: {
-        label: "Customize Columns",
+        label: "Columns",
         action: "view_details",
-        variant: "secondary",
+        variant: "outline",
         size: "sm",
       },
     },
@@ -350,9 +329,9 @@ const dashboardTree: UITree = {
       key: "add-section",
       type: "Button",
       props: {
-        label: "Add Section",
+        label: "Add",
         action: "view_details",
-        variant: "primary",
+        variant: "outline",
         size: "sm",
       },
     },
@@ -374,11 +353,146 @@ const dashboardTree: UITree = {
   },
 };
 
+const accountsTree: UITree = {
+  root: "system-accounts",
+  elements: {
+    "system-accounts": {
+      key: "system-accounts",
+      type: "Stack",
+      props: {
+        direction: "vertical",
+        gap: "lg",
+      },
+      children: ["accounts-toolbar", "accounts-table"],
+    },
+    "accounts-toolbar": {
+      key: "accounts-toolbar",
+      type: "Stack",
+      props: {
+        direction: "horizontal",
+        gap: "md",
+        align: "center",
+        justify: "between",
+      },
+      children: ["accounts-tabs-and-search", "accounts-actions"],
+    },
+    "accounts-tabs-and-search": {
+      key: "accounts-tabs-and-search",
+      type: "Stack",
+      props: {
+        direction: "horizontal",
+        gap: "md",
+        align: "center",
+        justify: "start",
+      },
+      children: ["accounts-tabs", "accounts-search"],
+    },
+    "accounts-search": {
+      key: "accounts-search",
+      type: "Stack",
+      props: {
+        direction: "horizontal",
+        gap: "sm",
+        align: "center",
+        justify: "start",
+      },
+      children: ["accounts-search-input"],
+    },
+    "accounts-search-input": {
+      key: "accounts-search-input",
+      type: "TextField",
+      props: {
+        label: null,
+        valuePath: "/form/accountsSearch",
+        placeholder: "Search accounts",
+      },
+    },
+    "accounts-tabs": {
+      key: "accounts-tabs",
+      type: "Tabs",
+      props: {
+        defaultValue: "all",
+        items: [
+          {
+            value: "all",
+            label: "All accounts",
+            action: "filter_accounts",
+            params: { status: "all" },
+          },
+          {
+            value: "active",
+            label: "Active",
+            action: "filter_accounts",
+            params: { status: "Active" },
+          },
+          {
+            value: "risk",
+            label: "At risk",
+            action: "filter_accounts",
+            params: { status: "At Risk" },
+          },
+        ],
+      },
+    },
+    "accounts-actions": {
+      key: "accounts-actions",
+      type: "Stack",
+      props: {
+        direction: "horizontal",
+        gap: "sm",
+      },
+      children: ["accounts-refresh"],
+    },
+    "accounts-refresh": {
+      key: "accounts-add",
+      type: "Button",
+      props: {
+        label: "Add account",
+        action: "add_account",
+        variant: "outline",
+        size: "sm",
+      },
+    },
+    "accounts-table": {
+      key: "accounts-table",
+      type: "DataTable",
+      props: {
+        dataPath: "/accounts/list",
+        enableSelection: true,
+        filterField: "status",
+        filterEventName: "accounts-filter",
+        hideSearch: true,
+        searchPath: "/form/accountsSearch",
+        initialSort: {
+          key: "arr",
+          direction: "desc",
+        },
+        searchKey: "name",
+        emptyMessage: "No accounts found",
+        columns: [
+          { key: "name", label: "Account", sortable: true },
+          { key: "owner", label: "Owner", sortable: true },
+          { key: "segment", label: "Segment", sortable: true },
+          { key: "status", label: "Status", format: "badge", sortable: true },
+          { key: "arr", label: "ARR", format: "currency", sortable: true },
+          { key: "renewalDate", label: "Renewal", format: "date", sortable: true },
+          { key: "health", label: "Health", format: "badge", sortable: true },
+        ],
+      },
+    },
+  },
+};
+
 export const SYSTEM_VIEWS: SystemView[] = [
   {
     id: "system-dashboard",
     label: "Dashboard",
     tree: dashboardTree,
+  },
+  {
+    id: "system-accounts",
+    label: "Accounts",
+    tree: accountsTree,
   },
 ];
 

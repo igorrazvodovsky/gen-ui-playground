@@ -107,7 +107,7 @@ export const dashboardCatalog = createCatalog({
     Select: {
       props: z.object({
         label: z.string().nullable(),
-        bindPath: z.string(),
+        valuePath: z.string(),
         options: z.array(
           z.object({
             value: z.string(),
@@ -122,10 +122,30 @@ export const dashboardCatalog = createCatalog({
     DatePicker: {
       props: z.object({
         label: z.string().nullable(),
-        bindPath: z.string(),
+        valuePath: z.string(),
         placeholder: z.string().nullable(),
       }),
       description: "Date picker input",
+    },
+
+    TextField: {
+      props: z.object({
+        label: z.string().nullable(),
+        valuePath: z.string(),
+        placeholder: z.string().nullable(),
+        type: z.string().nullable(),
+        checks: z
+          .array(
+            z.object({
+              fn: z.string(),
+              message: z.string(),
+              args: z.record(z.any()).nullable().optional(),
+            }),
+          )
+          .nullable(),
+        validateOn: z.enum(["change", "blur", "submit"]).nullable(),
+      }),
+      description: "Text input with optional validation checks",
     },
 
     // Typography

@@ -7,11 +7,17 @@ import { getByPath } from "@json-render/core";
 export function TextField({ element }: ComponentRenderProps) {
   const { label, valuePath, placeholder, type, checks, validateOn } =
     element.props as {
-      label: string;
+      label?: string | null;
       valuePath: string;
       placeholder?: string | null;
       type?: string | null;
-      checks?: Array<{ fn: string; message: string }> | null;
+      checks?:
+        | Array<{
+            fn: string;
+            message: string;
+            args?: Record<string, unknown> | null;
+          }>
+        | null;
       validateOn?: string | null;
     };
 
@@ -24,7 +30,7 @@ export function TextField({ element }: ComponentRenderProps) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      <label style={{ fontSize: 14, fontWeight: 500 }}>{label}</label>
+      {label && <label style={{ fontSize: 14, fontWeight: 500 }}>{label}</label>}
       <input
         type={type || "text"}
         value={value ?? ""}

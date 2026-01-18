@@ -5,6 +5,7 @@ import {
   DataProvider,
   ActionProvider,
   VisibilityProvider,
+  ValidationProvider,
   useUIStream,
   Renderer,
 } from "@json-render/react";
@@ -798,11 +799,13 @@ function DashboardContent() {
 export default function DashboardPage() {
   return (
     <DataProvider initialData={INITIAL_DATA}>
-      <VisibilityProvider>
-        <ActionProvider handlers={ACTION_HANDLERS}>
-          <DashboardContent />
-        </ActionProvider>
-      </VisibilityProvider>
+      <ValidationProvider>
+        <VisibilityProvider>
+          <ActionProvider handlers={ACTION_HANDLERS}>
+            <DashboardContent />
+          </ActionProvider>
+        </VisibilityProvider>
+      </ValidationProvider>
     </DataProvider>
   );
 }

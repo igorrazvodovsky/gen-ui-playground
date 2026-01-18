@@ -15,15 +15,21 @@ COMPONENT DETAILS:
 - Metric: { label: string, valuePath: string, format?: "number"|"currency"|"percent", trend?: "up"|"down"|"neutral", trendValue?: string }
 - Chart: { type: "bar"|"line"|"pie"|"area", dataPath: string, title?: string, height?: number }
 - Table: { title?: string, dataPath: string, columns: [{ key: string, label: string, format?: "text"|"currency"|"date"|"badge" }] }
-- Button: { label: string, action: string, variant?: "primary"|"secondary"|"danger"|"ghost" }
+- Button: { label: string, action: string, variant?: "primary"|"secondary"|"danger"|"ghost", size?: "sm"|"md"|"lg", disabled?: boolean }
 - Heading: { text: string, level?: "h1"|"h2"|"h3"|"h4" }
 - Text: { content: string, variant?: "body"|"caption"|"label", color?: "default"|"muted"|"success"|"warning"|"danger" }
 - Badge: { text: string, variant?: "default"|"success"|"warning"|"danger"|"info" }
-- Alert: { type: "info"|"success"|"warning"|"error", title: string, message?: string }
+- Alert: { type: "info"|"success"|"warning"|"error", title: string, message?: string, dismissible?: boolean }
+- Select: { label?: string, valuePath: string, options: [{ value: string, label: string }], placeholder?: string }
+- DatePicker: { label?: string, valuePath: string, placeholder?: string }
+- TextField: { label?: string, valuePath: string, placeholder?: string, type?: string, checks?: [{ fn: string, message: string, args?: Record<string, unknown> }], validateOn?: "change"|"blur"|"submit" }
+- List: { dataPath: string, emptyMessage?: string }
+- Divider: { label?: string }
+- Empty: { title: string, description?: string, action?: string, actionLabel?: string }
 
 DATA BINDING:
-- valuePath: "/analytics/revenue" (for single values like Metric)
-- dataPath: "/analytics/salesByRegion" (for arrays like Chart, Table)
+- valuePath: "/analytics/revenue" (for single values like Metric, TextField, Select)
+- dataPath: "/analytics/salesByRegion" (for arrays like Chart, Table, List)
 
 OUTPUT FORMAT:
 Output JSONL where each line is a patch operation. Use a FLAT key-based structure:

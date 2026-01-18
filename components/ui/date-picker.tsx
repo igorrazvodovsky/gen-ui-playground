@@ -5,16 +5,17 @@ import { useData } from "@json-render/react";
 import { getByPath } from "@json-render/core";
 
 export function DatePicker({ element }: ComponentRenderProps) {
-  const { label, valuePath } = element.props as {
-    label: string;
+  const { label, valuePath, placeholder } = element.props as {
+    label?: string | null;
     valuePath: string;
+    placeholder?: string | null;
   };
   const { data, set } = useData();
   const value = getByPath(data, valuePath) as string | undefined;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      <label style={{ fontSize: 14, fontWeight: 500 }}>{label}</label>
+      {label && <label style={{ fontSize: 14, fontWeight: 500 }}>{label}</label>}
       <input
         type="date"
         value={value ?? ""}
@@ -28,6 +29,7 @@ export function DatePicker({ element }: ComponentRenderProps) {
           fontSize: 16,
           outline: "none",
         }}
+        placeholder={placeholder ?? ""}
       />
     </div>
   );

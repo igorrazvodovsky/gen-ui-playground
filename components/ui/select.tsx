@@ -6,7 +6,7 @@ import { getByPath } from "@json-render/core";
 
 export function Select({ element }: ComponentRenderProps) {
   const { label, valuePath, options, placeholder } = element.props as {
-    label: string;
+    label?: string | null;
     valuePath: string;
     options: Array<{ value: string; label: string }>;
     placeholder?: string | null;
@@ -17,7 +17,7 @@ export function Select({ element }: ComponentRenderProps) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      <label style={{ fontSize: 14, fontWeight: 500 }}>{label}</label>
+      {label && <label style={{ fontSize: 14, fontWeight: 500 }}>{label}</label>}
       <select
         value={value ?? ""}
         onChange={(e) => set(valuePath, e.target.value)}

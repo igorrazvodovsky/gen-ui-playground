@@ -51,9 +51,11 @@ import {
 import {
   BarChart,
   Bell,
+  BriefcaseBusiness,
   Calendar,
   ChevronLeft,
   ChevronRight,
+  PanelRight,
   ChevronsUpDown,
   Clock,
   FileText,
@@ -499,7 +501,11 @@ function DashboardContent() {
                         isActive={activeSystemViewId === view.id}
                         onClick={() => handleSystemViewSelect(view)}
                       >
-                        <LayoutDashboard />
+                        {(view.id === "system-accounts" ? (
+                          <BriefcaseBusiness />
+                        ) : (
+                          <LayoutDashboard />
+                        ))}
                         <span>{view.label}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -640,7 +646,7 @@ function DashboardContent() {
           <SidebarRail />
         </Sidebar>
 
-        <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="flex flex-1 flex-col overflow-auto">
           <header className="flex items-center justify-between border-border bg-background px-4 py-3">
             <div className="flex items-center gap-2">
               <SidebarTrigger />
@@ -649,25 +655,19 @@ function DashboardContent() {
             <div className="flex flex-1 justify-center px-4">
               <Popover open={commandOpen} onOpenChange={setCommandOpen}>
                 <PopoverTrigger asChild>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={commandOpen}
-                        className="w-full max-w-md justify-start gap-2 text-muted-foreground bg-transparent"
-                      >
-                        <Search className="size-4" />
-                        <span>{prompt || "Describe what you want..."}</span>
-                        <kbd className="pointer-events-none ml-auto hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                          <span className="text-xs">⌘</span>K
-                        </kbd>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" align="center">
-                      Command menu (⌘K / Ctrl+K)
-                    </TooltipContent>
-                  </Tooltip>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={commandOpen}
+                    className="w-full max-w-md justify-start gap-2 text-muted-foreground bg-transparent"
+                    title="Command menu (⌘K / Ctrl+K)"
+                  >
+                    <Search className="size-4" />
+                    <span>{prompt || "Describe what you want..."}</span>
+                    <kbd className="pointer-events-none ml-auto hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                      <span className="text-xs">⌘</span>K
+                    </kbd>
+                  </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[400px] p-0" align="center">
                   <Command
@@ -718,7 +718,7 @@ function DashboardContent() {
                       onClick={() => setRightSidebarOpen(true)}
                       className="h-8 w-8"
                     >
-                      <ChevronLeft className="h-4 w-4" />
+                      <PanelRight className="h-4 w-4" />
                       <span className="sr-only">Expand sidebar</span>
                     </Button>
                   </TooltipTrigger>
@@ -730,7 +730,7 @@ function DashboardContent() {
             </div>
           </header>
 
-          <main className="flex-1 overflow-auto p-3">
+          <main className="flex-1 p-3">
             <div className="mx-auto max-w-6xl space-y-6">
 
               <div className="p-3">
@@ -785,7 +785,7 @@ function DashboardContent() {
                   onClick={() => setRightSidebarOpen(false)}
                   className="h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent"
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  <PanelRight className="h-4 w-4" />
                   <span className="sr-only">Collapse details</span>
                 </Button>
               </TooltipTrigger>

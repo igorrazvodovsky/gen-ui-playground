@@ -12,6 +12,7 @@ export function Card({ element, children }: ComponentRenderProps) {
   const paddings: Record<string, string> = {
     none: "0",
     sm: "12px",
+    md: "16px",
     lg: "24px",
   };
 

@@ -19,6 +19,9 @@ After this change, the dashboard page renders the dual-sidebar layout from `temp
 - [x] (2026-01-17 15:52Z) Install new dependencies and update `package-lock.json`.
 - [x] (2026-01-17 16:52Z) Run lint/build checks.
 - [ ] (2026-01-17 16:53Z) Start the dev server to validate UI (started on port 3010; manual UI verification remaining).
+- [x] (2026-01-18 18:03Z) Add JSON-backed system views with a default dashboard and expose them in the left sidebar.
+- [x] (2026-01-18 18:03Z) Extend JSON components/catalog to support Stack justification, Table titles, and Button sizing for system/custom dashboards.
+- [x] (2026-01-18 18:04Z) Replace the custom SVG chart renderer with a shadcn-style Recharts implementation and install the missing dependency.
 
 ## Surprises & Discoveries
 
@@ -32,16 +35,24 @@ After this change, the dashboard page renders the dual-sidebar layout from `temp
   Evidence: Next.js error `EADDRINUSE` for :::3001.
 - Observation: `npm run dev -- --port 3002` also failed with `EADDRINUSE`, but port 3010 worked and the server started successfully before the command timed out.
   Evidence: Next.js output showing `Ready` on `http://localhost:3010`.
+- Observation: `npm install` fails with `Cannot read properties of null (reading 'matches')` in npm 11.6.2, so `pnpm add recharts@2.15.4` was used to install the chart dependency.
+  Evidence: npm arborist stack trace in `.npm/_logs/...` and successful pnpm add output.
 
 ## Decision Log
 
 - Decision: Use the shadcn-style Tailwind layout and primitives from `temp-two-sided-page-component/` rather than re-implementing them with inline styles.
   Rationale: The request stresses reproducing the layout exactly, and the source layout relies on Tailwind utilities and Radix-based primitives.
   Date/Author: 2026-01-17 / Codex
+- Decision: Define system views as JSON trees in `lib/system-views.ts` and render them through the same `Renderer` path as generated views.
+  Rationale: Keeps system views and generated dashboards on the same JSON rendering mechanism while enabling sidebar selection.
+  Date/Author: 2026-01-18 / Codex
+- Decision: Swap the chart renderer to a Recharts-based implementation styled like shadcn charts.
+  Rationale: Aligns with shadcn guidance and supports richer chart types for generated dashboards.
+  Date/Author: 2026-01-18 / Codex
 
 ## Outcomes & Retrospective
 
-Implemented the dual-sidebar layout, ported shadcn primitives and Tailwind theme, and wired the command palette to `useUIStream` with prompt suggestions inside the menu. The lint step is still blocked because the local environment lacks the `@repo/eslint-config` package referenced by `eslint.config.js`.
+Implemented the dual-sidebar layout, ported shadcn primitives and Tailwind theme, and wired the command palette to `useUIStream` with prompt suggestions inside the menu. Added JSON-backed system views (including a default dashboard), updated JSON components to support more layout options, and replaced the chart renderer with a Recharts-based version aligned with shadcn guidance. The dev-server validation step remains manual because the default port is occupied locally.
 
 ## Context and Orientation
 
@@ -101,3 +112,4 @@ The following dependencies must exist in `package.json` for the layout to compil
 2026-01-17 15:53Z: Updated Outcomes & Retrospective to summarize delivered layout and note the outstanding lint blocker. This records the current end state of the implementation.
 2026-01-17 16:51Z: Logged failed attempts to install `@repo/eslint-config` and to start the dev server, and added new progress blockers for linting and port usage.
 2026-01-17 16:53Z: Marked lint as complete and recorded the successful dev server start on port 3010 with pending manual UI verification.
+2026-01-18 18:04Z: Added progress entries for system views and Recharts charts, documented npm install failure and pnpm workaround, and recorded design decisions for JSON-backed system views and shadcn-style charts.

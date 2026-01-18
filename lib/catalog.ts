@@ -38,6 +38,9 @@ export const dashboardCatalog = createCatalog({
         direction: z.enum(["horizontal", "vertical"]).nullable(),
         gap: z.enum(["sm", "md", "lg"]).nullable(),
         align: z.enum(["start", "center", "end", "stretch"]).nullable(),
+        justify: z
+          .enum(["start", "center", "end", "between", "around", "evenly"])
+          .nullable(),
       }),
       hasChildren: true,
       description: "Flex stack for horizontal or vertical layouts",
@@ -67,6 +70,7 @@ export const dashboardCatalog = createCatalog({
 
     Table: {
       props: z.object({
+        title: z.string().nullable(),
         dataPath: z.string(),
         columns: z.array(
           z.object({

@@ -11,10 +11,10 @@ ${componentList.join(", ")}
 COMPONENT DETAILS:
 - Card: { title?: string, description?: string, padding?: "sm"|"md"|"lg" } - Container with optional title
 - Grid: { columns?: 1-4, gap?: "sm"|"md"|"lg" } - Grid layout
-- Stack: { direction?: "horizontal"|"vertical", gap?: "sm"|"md"|"lg", align?: "start"|"center"|"end"|"stretch" } - Flex layout
+- Stack: { direction?: "horizontal"|"vertical", gap?: "sm"|"md"|"lg", align?: "start"|"center"|"end"|"stretch", justify?: "start"|"center"|"end"|"between"|"around"|"evenly" } - Flex layout
 - Metric: { label: string, valuePath: string, format?: "number"|"currency"|"percent", trend?: "up"|"down"|"neutral", trendValue?: string }
 - Chart: { type: "bar"|"line"|"pie"|"area", dataPath: string, title?: string, height?: number }
-- Table: { dataPath: string, columns: [{ key: string, label: string, format?: "text"|"currency"|"date"|"badge" }] }
+- Table: { title?: string, dataPath: string, columns: [{ key: string, label: string, format?: "text"|"currency"|"date"|"badge" }] }
 - Button: { label: string, action: string, variant?: "primary"|"secondary"|"danger"|"ghost" }
 - Heading: { text: string, level?: "h1"|"h2"|"h3"|"h4" }
 - Text: { content: string, variant?: "body"|"caption"|"label", color?: "default"|"muted"|"success"|"warning"|"danger" }

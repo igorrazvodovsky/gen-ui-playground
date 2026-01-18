@@ -8,10 +8,11 @@ export function RenderButton({
   onAction,
   loading,
 }: ComponentRenderProps) {
-  const { label, variant, action, disabled } = element.props as {
+  const { label, variant, action, disabled, size } = element.props as {
     label: string;
     variant?: string | null;
-    action: { name: string };
+    size?: string | null;
+    action?: { name: string } | string | null;
     disabled?: boolean | null;
   };
 
@@ -29,17 +30,23 @@ export function RenderButton({
     danger: { background: "#dc2626", color: "#fff", border: "none" },
     ghost: { background: "transparent", color: "var(--muted)", border: "none" },
   };
+  const sizes: Record<string, React.CSSProperties> = {
+    sm: { padding: "6px 12px", fontSize: 12 },
+    md: { padding: "8px 16px", fontSize: 14 },
+    lg: { padding: "10px 20px", fontSize: 16 },
+  };
+  const resolvedAction =
+    typeof action === "string" ? { name: action } : action;
 
   return (
     <button
-      onClick={() => !disabled && action && onAction?.(action)}
+      onClick={() => !disabled && resolvedAction && onAction?.(resolvedAction)}
       disabled={!!disabled || loading}
       style={{
-        padding: "8px 16px",
         borderRadius: "var(--radius)",
-        fontSize: 14,
         fontWeight: 500,
         opacity: disabled ? 0.5 : 1,
+        ...sizes[size || "md"],
         ...variants[variant || "primary"],
       }}
     >

@@ -8,6 +8,7 @@ import {
   useUIStream,
   Renderer,
 } from "@json-render/react";
+import type { UITree } from "@json-render/core";
 import { Button } from "@/components/ui/button";
 import {
   Sidebar,
@@ -54,6 +55,7 @@ import {
   Home,
   Inbox,
   Info,
+  LayoutDashboard,
   LogOut,
   Plus,
   Search,
@@ -64,15 +66,20 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { componentRegistry } from "@/components/ui";
+import {
+  DEFAULT_SYSTEM_VIEW,
+  SYSTEM_VIEWS,
+  type SystemView,
+} from "@/lib/system-views";
 
-type RenderTree = ReturnType<typeof useUIStream>["tree"];
-type StoredTree = NonNullable<RenderTree>;
+type StoredTree = UITree;
 type RecentItem = {
   id: string;
   label: string;
   tree: StoredTree;
   createdAt: number;
 };
+type SystemViewEntry = SystemView;
 
 const MAX_RECENT = 5;
 
@@ -123,6 +130,70 @@ const INITIAL_DATA = {
     dateRange: "",
     region: "",
   },
+  dashboard: {
+    metrics: {
+      totalRevenue: 1250,
+      newCustomers: 1234,
+      activeAccounts: 45678,
+      growthRate: 0.045,
+    },
+    visitors: [
+      { label: "Apr 2", value: 120 },
+      { label: "Apr 7", value: 180 },
+      { label: "Apr 12", value: 140 },
+      { label: "Apr 17", value: 220 },
+      { label: "Apr 22", value: 160 },
+      { label: "Apr 27", value: 240 },
+      { label: "May 2", value: 210 },
+      { label: "May 7", value: 260 },
+      { label: "May 12", value: 190 },
+      { label: "May 17", value: 280 },
+      { label: "May 22", value: 230 },
+      { label: "May 27", value: 300 },
+    ],
+    sections: [
+      {
+        title: "Cover page",
+        type: "Cover page",
+        status: "In Progress",
+        target: 18,
+        limit: 5,
+        reviewer: "Eddie Lake",
+      },
+      {
+        title: "Table of contents",
+        type: "Table of contents",
+        status: "Done",
+        target: 29,
+        limit: 24,
+        reviewer: "Eddie Lake",
+      },
+      {
+        title: "Executive summary",
+        type: "Narrative",
+        status: "Done",
+        target: 10,
+        limit: 13,
+        reviewer: "Eddie Lake",
+      },
+      {
+        title: "Technical approach",
+        type: "Narrative",
+        status: "Done",
+        target: 27,
+        limit: 23,
+        reviewer: "Jamik Tashpulatov",
+      },
+      {
+        title: "Design",
+        type: "Narrative",
+        status: "In Progress",
+        target: 2,
+        limit: 16,
+        reviewer: "Jamik Tashpulatov",
+      },
+    ],
+  },
 };
 
 const ACTION_HANDLERS = {
@@ -147,9 +218,14 @@ function DashboardContent() {
   const [activeWorkspace, setActiveWorkspace] = useState("Acme Corp");
   const [commandOpen, setCommandOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
+  const [activeSystemViewId, setActiveSystemViewId] = useState<string | null>(
+    DEFAULT_SYSTEM_VIEW?.id ?? null,
+  );
   const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
   const [activeRecentId, setActiveRecentId] = useState<string | null>(null);
-  const [activeTree, setActiveTree] = useState<StoredTree | null>(null);
+  const [activeTree, setActiveTree] = useState<StoredTree | null>(
+    DEFAULT_SYSTEM_VIEW?.tree ?? null,
+  );
   const generationIdRef = useRef(0);
   const lastStoredGenerationRef = useRef(0);
   const lastPromptRef = useRef<string | null>(null);
@@ -166,6 +242,7 @@ function DashboardContent() {
       lastPromptRef.current = trimmed;
       setActiveTree(null);
       setActiveRecentId(null);
+      setActiveSystemViewId(null);
       setCommandOpen(false);
       setPrompt("");
       await send(trimmed, { data: INITIAL_DATA });
@@ -176,6 +253,13 @@ function DashboardContent() {
   const handleRecentSelect = useCallback((item: RecentItem) => {
     setActiveTree(item.tree);
     setActiveRecentId(item.id);
+    setActiveSystemViewId(null);
+  }, []);
+
+  const handleSystemViewSelect = useCallback((view: SystemViewEntry) => {
+    setActiveTree(view.tree);
+    setActiveRecentId(null);
+    setActiveSystemViewId(view.id);
   }, []);
 
   useEffect(() => {
@@ -199,6 +283,7 @@ function DashboardContent() {
     });
     setActiveRecentId(id);
     setActiveTree(snapshot);
+    setActiveSystemViewId(null);
     lastStoredGenerationRef.current = generationIdRef.current;
   }, [isStreaming, tree]);
 
@@ -228,9 +313,6 @@ function DashboardContent() {
                       <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                         <span className="truncate font-semibold">
                           {activeWorkspace}
-                        </span>
-                        <span className="truncate text-xs text-muted-foreground">
-                          Free Plan
                         </span>
                       </div>
                       <ChevronsUpDown className="ml-auto group-data-[collapsible=icon]:hidden" />
@@ -333,6 +415,26 @@ function DashboardContent() {
                       <span>Settings</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel>Views</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {SYSTEM_VIEWS.map((view) => (
+                    <SidebarMenuItem key={view.id}>
+                      <SidebarMenuButton
+                        tooltip={view.label}
+                        isActive={activeSystemViewId === view.id}
+                        onClick={() => handleSystemViewSelect(view)}
+                      >
+                        <LayoutDashboard />
+                        <span>{view.label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -520,7 +622,7 @@ function DashboardContent() {
           </header>
 
           <main className="flex-1 overflow-auto p-6">
-            <div className="mx-auto space-y-6">
+            <div className="mx-auto max-w-6xl space-y-6">
 
               <div className="p-6">
                 {error && (

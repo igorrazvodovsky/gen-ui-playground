@@ -3,6 +3,7 @@ import type { UITree } from "@json-render/core";
 export type SystemView = {
   id: string;
   label: string;
+  prompt: string;
   tree: UITree;
 };
 
@@ -487,11 +488,15 @@ export const SYSTEM_VIEWS: SystemView[] = [
   {
     id: "system-dashboard",
     label: "Dashboard",
+    prompt:
+      "Executive dashboard with revenue metrics, visitor trend chart, and document outline table.",
     tree: dashboardTree,
   },
   {
     id: "system-accounts",
     label: "Accounts",
+    prompt:
+      "Accounts overview with tabs, search, and a sortable table for ARR, status, and renewals.",
     tree: accountsTree,
   },
 ];

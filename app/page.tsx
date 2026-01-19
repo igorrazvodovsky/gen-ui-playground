@@ -82,11 +82,15 @@ import {
 type StoredTree = UITree;
 type RecentItem = {
   id: string;
-  label: string;
+  prompt: string;
   tree: StoredTree;
   createdAt: number;
 };
 type SystemViewEntry = SystemView;
+type RegenerationTarget = {
+  type: "recent" | "system";
+  id: string;
+};
 
 const MAX_RECENT = 5;
 
@@ -321,7 +325,9 @@ function DashboardContent() {
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [activeWorkspace, setActiveWorkspace] = useState("Acme Corp");
   const [commandOpen, setCommandOpen] = useState(false);
+  const [commandMode, setCommandMode] = useState<"new" | "edit">("new");
   const [prompt, setPrompt] = useState("");
+  const [systemViews, setSystemViews] = useState<SystemViewEntry[]>(SYSTEM_VIEWS);
   const [activeSystemViewId, setActiveSystemViewId] = useState<string | null>(
     DEFAULT_SYSTEM_VIEW?.id ?? null,
   );
@@ -333,6 +339,8 @@ function DashboardContent() {
   const generationIdRef = useRef(0);
   const lastStoredGenerationRef = useRef(0);
   const lastPromptRef = useRef<string | null>(null);
+  const regenerationTargetRef = useRef<RegenerationTarget | null>(null);
+  const promptEditBaselineRef = useRef<string | null>(null);
   const { tree, isStreaming, error, send } = useUIStream({
     api: "/api/generate",
     onError: (err) => console.error("Generation error:", err),
@@ -345,45 +353,186 @@ function DashboardContent() {
     return tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT";
   }, []);
 
+  const activeSystemView = systemViews.find(
+    (view) => view.id === activeSystemViewId,
+  );
+  const activeRecent = recentItems.find((item) => item.id === activeRecentId);
+  const activePrompt = activeSystemView?.prompt ?? activeRecent?.prompt ?? "";
+  const isPromptEditable = !!activeSystemView || !!activeRecent;
+  const currentViewLabel =
+    activeSystemView?.label ??
+    activeRecent?.prompt ??
+    (isStreaming ? "Generating..." : "New view");
+  const normalizedPrompt = prompt.trim().toLowerCase();
+  const suggestionMatches = normalizedPrompt
+    ? PROMPT_SUGGESTIONS.filter(({ label }) =>
+        label.toLowerCase().includes(normalizedPrompt),
+      )
+    : PROMPT_SUGGESTIONS;
+  const showSuggestions = suggestionMatches.length > 0;
+
+  const openCommandMenu = useCallback(
+    (mode: "new" | "edit", initialPrompt?: string) => {
+      const resolvedPrompt =
+        typeof initialPrompt === "string"
+          ? initialPrompt
+          : mode === "edit"
+            ? activePrompt
+            : "";
+      setCommandMode(mode);
+      setPrompt(resolvedPrompt);
+      promptEditBaselineRef.current = mode === "edit" ? resolvedPrompt : null;
+      setCommandOpen(true);
+    },
+    [activePrompt],
+  );
+
+  const updateRecentPrompt = useCallback((id: string, nextPrompt: string) => {
+    setRecentItems((items) =>
+      items.map((item) =>
+        item.id === id ? { ...item, prompt: nextPrompt } : item,
+      ),
+    );
+  }, []);
+
+  const updateSystemPrompt = useCallback((id: string, nextPrompt: string) => {
+    setSystemViews((views) =>
+      views.map((view) =>
+        view.id === id ? { ...view, prompt: nextPrompt } : view,
+      ),
+    );
+  }, []);
+
+  const handlePromptEdit = useCallback(
+    (nextPrompt: string) => {
+      if (activeRecentId) {
+        updateRecentPrompt(activeRecentId, nextPrompt);
+        return;
+      }
+      if (activeSystemViewId) {
+        updateSystemPrompt(activeSystemViewId, nextPrompt);
+      }
+    },
+    [activeRecentId, activeSystemViewId, updateRecentPrompt, updateSystemPrompt],
+  );
+
+  const handlePromptRegenerate = useCallback(
+    async (value: string) => {
+      const trimmed = value.trim();
+      if (!trimmed || isStreaming) return;
+      const targetId = activeRecentId ?? activeSystemViewId;
+      if (!targetId) return;
+
+      generationIdRef.current += 1;
+      lastPromptRef.current = trimmed;
+      regenerationTargetRef.current = activeRecentId
+        ? { type: "recent", id: activeRecentId }
+        : { type: "system", id: targetId };
+      setActiveTree(null);
+      setCommandOpen(false);
+      setCommandMode("new");
+      promptEditBaselineRef.current = null;
+      await send(trimmed, { data: INITIAL_DATA });
+    },
+    [activeRecentId, activeSystemViewId, isStreaming, send],
+  );
+
   const handlePromptSubmit = useCallback(
     async (value: string) => {
       const trimmed = value.trim();
       if (!trimmed || isStreaming) return;
       generationIdRef.current += 1;
       lastPromptRef.current = trimmed;
+      regenerationTargetRef.current = null;
       setActiveTree(null);
       setActiveRecentId(null);
       setActiveSystemViewId(null);
       setCommandOpen(false);
+      setCommandMode("new");
+      promptEditBaselineRef.current = null;
       setPrompt("");
       await send(trimmed, { data: INITIAL_DATA });
     },
     [isStreaming, send],
   );
 
+  const handleCommandSubmit = useCallback(
+    (value: string) => {
+      if (commandMode === "edit") {
+        handlePromptEdit(value);
+        const baseline = promptEditBaselineRef.current;
+        if (baseline !== null && baseline.trim() === value.trim()) {
+          setCommandOpen(false);
+          setCommandMode("new");
+          promptEditBaselineRef.current = null;
+          return;
+        }
+        void handlePromptRegenerate(value);
+        return;
+      }
+      void handlePromptSubmit(value);
+    },
+    [commandMode, handlePromptEdit, handlePromptRegenerate, handlePromptSubmit],
+  );
+
   const handleRecentSelect = useCallback((item: RecentItem) => {
+    if (activeRecentId === item.id) {
+      openCommandMenu("edit", item.prompt);
+      return;
+    }
     setActiveTree(item.tree);
     setActiveRecentId(item.id);
     setActiveSystemViewId(null);
-  }, []);
+  }, [activeRecentId, openCommandMenu]);
 
   const handleSystemViewSelect = useCallback((view: SystemViewEntry) => {
+    if (activeSystemViewId === view.id) {
+      openCommandMenu("edit", view.prompt);
+      return;
+    }
     setActiveTree(view.tree);
     setActiveRecentId(null);
     setActiveSystemViewId(view.id);
-  }, []);
+  }, [activeSystemViewId, openCommandMenu]);
 
   useEffect(() => {
     if (!tree || isStreaming) return;
-    if (!lastPromptRef.current) return;
     if (lastStoredGenerationRef.current === generationIdRef.current) return;
     if (Object.keys(tree.elements).length === 0) return;
 
     const snapshot = JSON.parse(JSON.stringify(tree)) as StoredTree;
+    const regenerationTarget = regenerationTargetRef.current;
+    if (regenerationTarget) {
+      if (regenerationTarget.type === "recent") {
+        setRecentItems((items) =>
+          items.map((item) =>
+            item.id === regenerationTarget.id
+              ? { ...item, tree: snapshot }
+              : item,
+          ),
+        );
+        setActiveRecentId(regenerationTarget.id);
+        setActiveSystemViewId(null);
+      } else {
+        setSystemViews((views) =>
+          views.map((view) =>
+            view.id === regenerationTarget.id ? { ...view, tree: snapshot } : view,
+          ),
+        );
+        setActiveSystemViewId(regenerationTarget.id);
+        setActiveRecentId(null);
+      }
+      setActiveTree(snapshot);
+      lastStoredGenerationRef.current = generationIdRef.current;
+      regenerationTargetRef.current = null;
+      return;
+    }
+
+    if (!lastPromptRef.current) return;
     const id = `generation-${generationIdRef.current}`;
     const item: RecentItem = {
       id,
-      label: lastPromptRef.current,
+      prompt: lastPromptRef.current,
       tree: snapshot,
       createdAt: Date.now(),
     };
@@ -407,7 +556,13 @@ function DashboardContent() {
       const key = event.key.toLowerCase();
       if (key === "k") {
         event.preventDefault();
-        setCommandOpen((open) => !open);
+        if (commandOpen) {
+          setCommandOpen(false);
+          setCommandMode("new");
+          promptEditBaselineRef.current = null;
+        } else {
+          openCommandMenu("new");
+        }
         return;
       }
 
@@ -420,20 +575,12 @@ function DashboardContent() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isEditableTarget]);
+  }, [commandOpen, isEditableTarget, openCommandMenu]);
 
   const displayTree = activeTree ?? tree;
   const hasElements =
     !!displayTree && Object.keys(displayTree.elements).length > 0;
   const isStreamingDisplay = isStreaming && !activeTree;
-  const activeSystemView = SYSTEM_VIEWS.find(
-    (view) => view.id === activeSystemViewId,
-  );
-  const activeRecent = recentItems.find((item) => item.id === activeRecentId);
-  const currentViewLabel =
-    activeSystemView?.label ??
-    activeRecent?.label ??
-    (isStreaming ? "Generating..." : "New view");
 
   return (
     <div className="flex h-screen bg-background">
@@ -501,7 +648,7 @@ function DashboardContent() {
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {SYSTEM_VIEWS.map((view) => (
+                  {systemViews.map((view) => (
                     <SidebarMenuItem key={view.id}>
                       <SidebarMenuButton
                         tooltip={view.label}
@@ -565,13 +712,13 @@ function DashboardContent() {
                     recentItems.map((item) => (
                       <SidebarMenuItem key={item.id}>
                         <SidebarMenuButton
-                          tooltip={item.label}
+                          tooltip={item.prompt}
                           isActive={activeRecentId === item.id}
                           onClick={() => handleRecentSelect(item)}
                           disabled={isStreaming}
                         >
                           <Clock />
-                          <span>{item.label}</span>
+                          <span>{item.prompt}</span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     ))
@@ -673,7 +820,7 @@ function DashboardContent() {
                   aria-label="Open command menu"
                   className="absolute inset-0 w-full justify-start gap-2 text-muted-foreground opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100"
                   title="Command menu (⌘K / Ctrl+K)"
-                  onClick={() => setCommandOpen(true)}
+                  onClick={() => openCommandMenu("edit", activePrompt)}
                 >
                   <Search className="size-4" />
                   <span className="sr-only">Command menu</span>
@@ -684,40 +831,65 @@ function DashboardContent() {
               </div>
               <CommandDialog
                 open={commandOpen}
-                onOpenChange={setCommandOpen}
-                title="Command menu"
-                description="Describe what you want..."
+                onOpenChange={(open) => {
+                  setCommandOpen(open);
+                  if (!open) {
+                    setCommandMode("new");
+                    promptEditBaselineRef.current = null;
+                  }
+                }}
+                title={commandMode === "edit" ? "Edit prompt" : "Command menu"}
+                description={
+                  commandMode === "edit"
+                    ? "Update the prompt and press Enter to regenerate."
+                    : "Describe what you want..."
+                }
                 showCloseButton={false}
                 commandProps={{ shouldFilter: false }}
               >
                 <CommandInput
-                  placeholder="Describe what you want..."
+                  placeholder={
+                    commandMode === "edit"
+                      ? "Edit the prompt..."
+                      : "Describe what you want..."
+                  }
                   value={prompt}
-                  onValueChange={setPrompt}
+                  onValueChange={(value) => {
+                    setPrompt(value);
+                    if (commandMode === "edit") {
+                      handlePromptEdit(value);
+                    }
+                  }}
                   disabled={isStreaming}
                   onKeyDown={(event) => {
                     if (event.key === "Enter") {
                       event.preventDefault();
                       event.stopPropagation();
-                      handlePromptSubmit(prompt);
+                      handleCommandSubmit(prompt);
                     }
                   }}
                 />
                 <CommandList>
-                  <CommandEmpty>No results found.</CommandEmpty>
-                  <CommandGroup heading="Suggestions">
-                    {PROMPT_SUGGESTIONS.map(({ label, icon: Icon }) => (
-                      <CommandItem
-                        key={label}
-                        value={label}
-                        onSelect={() => handlePromptSubmit(label)}
-                        disabled={isStreaming}
-                      >
-                        <Icon className="mr-2 size-4" />
-                        <span>{label}</span>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
+                  {/* {!showSuggestions && normalizedPrompt.length > 0 ? (
+                    <CommandEmpty>
+                      No suggestions. Press Enter to generate.
+                    </CommandEmpty>
+                  ) : null} */}
+                  {showSuggestions ? (
+                    <CommandGroup heading="Suggestions">
+                      {suggestionMatches.map(({ label, icon: Icon }) => (
+                        <CommandItem
+                          key={label}
+                          value={label}
+                          onSelect={() => handleCommandSubmit(label)}
+                          disabled={isStreaming}
+                        >
+                          <Icon className="mr-2 size-4" />
+                          <span>{label}</span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  ) : null}
                 </CommandList>
               </CommandDialog>
             </div>
@@ -835,6 +1007,36 @@ function DashboardContent() {
                   </span>
                 </div>
               </div>
+            </div>
+
+            <div>
+              <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-sidebar-foreground">
+                <FileText className="h-4 w-4" />
+                Prompt
+              </h3>
+                <textarea
+                  id="view-prompt"
+                  value={activePrompt}
+                  onChange={(event) => handlePromptEdit(event.target.value)}
+                  onFocus={() => {
+                    promptEditBaselineRef.current = activePrompt;
+                  }}
+                  onBlur={(event) => {
+                    const baseline = promptEditBaselineRef.current;
+                    promptEditBaselineRef.current = null;
+                    if (baseline !== null && baseline !== event.currentTarget.value) {
+                      handlePromptRegenerate(event.currentTarget.value);
+                    }
+                  }}
+                  placeholder={
+                    isPromptEditable
+                      ? "Describe this view..."
+                      : "Select a view to edit its prompt."
+                  }
+                  disabled={!isPromptEditable || isStreaming}
+                  rows={4}
+                  className="min-h-[96px] w-full resize-none rounded-md border border-sidebar-border bg-background px-3 py-2 text-sm text-sidebar-foreground placeholder:text-muted-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/60 disabled:cursor-not-allowed disabled:opacity-60"
+                />
             </div>
 
             <div>

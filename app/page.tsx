@@ -35,14 +35,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Command,
+  CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Tooltip,
   TooltipContent,
@@ -427,6 +426,14 @@ function DashboardContent() {
   const hasElements =
     !!displayTree && Object.keys(displayTree.elements).length > 0;
   const isStreamingDisplay = isStreaming && !activeTree;
+  const activeSystemView = SYSTEM_VIEWS.find(
+    (view) => view.id === activeSystemViewId,
+  );
+  const activeRecent = recentItems.find((item) => item.id === activeRecentId);
+  const currentViewLabel =
+    activeSystemView?.label ??
+    activeRecent?.label ??
+    (isStreaming ? "Generating..." : "New view");
 
   return (
     <div className="flex h-screen bg-background">
@@ -653,59 +660,66 @@ function DashboardContent() {
             </div>
 
             <div className="flex flex-1 justify-center px-4">
-              <Popover open={commandOpen} onOpenChange={setCommandOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={commandOpen}
-                    className="w-full max-w-md justify-start gap-2 text-muted-foreground bg-transparent"
-                    title="Command menu (⌘K / Ctrl+K)"
-                  >
-                    <Search className="size-4" />
-                    <span>{prompt || "Describe what you want..."}</span>
-                    <kbd className="pointer-events-none ml-auto hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                      <span className="text-xs">⌘</span>K
-                    </kbd>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[400px] p-0" align="center">
-                  <Command
-                    className="rounded-lg border shadow-md"
-                    shouldFilter={false}
-                  >
-                    <CommandInput
-                      placeholder="Describe what you want..."
-                      value={prompt}
-                      onValueChange={setPrompt}
-                      disabled={isStreaming}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          handlePromptSubmit(prompt);
-                        }
-                      }}
-                    />
-                    <CommandList>
-                      <CommandEmpty>No results found.</CommandEmpty>
-                      <CommandGroup heading="Suggestions">
-                        {PROMPT_SUGGESTIONS.map(({ label, icon: Icon }) => (
-                          <CommandItem
-                            key={label}
-                            value={label}
-                            onSelect={() => handlePromptSubmit(label)}
-                            disabled={isStreaming}
-                          >
-                            <Icon className="mr-2 size-4" />
-                            <span>{label}</span>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <div className="group relative h-9 w-full max-w-md">
+                <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center text-sm font-medium text-foreground">
+                  <span className="block w-full truncate text-center">
+                    {currentViewLabel}
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  aria-expanded={commandOpen}
+                  aria-haspopup="dialog"
+                  aria-label="Open command menu"
+                  className="absolute inset-0 w-full justify-start gap-2 text-muted-foreground opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100"
+                  title="Command menu (⌘K / Ctrl+K)"
+                  onClick={() => setCommandOpen(true)}
+                >
+                  <Search className="size-4" />
+                  <span className="sr-only">Command menu</span>
+                  <kbd className="pointer-events-none ml-auto hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                    <span className="text-xs">⌘</span>K
+                  </kbd>
+                </Button>
+              </div>
+              <CommandDialog
+                open={commandOpen}
+                onOpenChange={setCommandOpen}
+                title="Command menu"
+                description="Describe what you want..."
+                showCloseButton={false}
+                commandProps={{ shouldFilter: false }}
+              >
+                <CommandInput
+                  placeholder="Describe what you want..."
+                  value={prompt}
+                  onValueChange={setPrompt}
+                  disabled={isStreaming}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      handlePromptSubmit(prompt);
+                    }
+                  }}
+                />
+                <CommandList>
+                  <CommandEmpty>No results found.</CommandEmpty>
+                  <CommandGroup heading="Suggestions">
+                    {PROMPT_SUGGESTIONS.map(({ label, icon: Icon }) => (
+                      <CommandItem
+                        key={label}
+                        value={label}
+                        onSelect={() => handlePromptSubmit(label)}
+                        disabled={isStreaming}
+                      >
+                        <Icon className="mr-2 size-4" />
+                        <span>{label}</span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </CommandDialog>
             </div>
 
             <div className="flex items-center gap-2">

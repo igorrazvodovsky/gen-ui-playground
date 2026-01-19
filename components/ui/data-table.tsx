@@ -167,13 +167,17 @@ export function DataTable({ element }: ComponentRenderProps) {
   }, [filterField, filterValue, rows]);
 
   useEffect(() => {
-    if (searchPath && typeof externalSearch === "string") {
-      setGlobalFilter(externalSearch);
+    if (!searchPath) return;
+    if (typeof externalSearch === "string") {
+      if (externalSearch !== globalFilter) {
+        setGlobalFilter(externalSearch);
+      }
+      return;
     }
-    if (searchPath && externalSearch === null) {
+    if (externalSearch === null && globalFilter !== "") {
       setGlobalFilter("");
     }
-  }, [externalSearch, searchPath]);
+  }, [externalSearch, globalFilter, searchPath]);
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({

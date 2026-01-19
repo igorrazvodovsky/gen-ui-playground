@@ -3,6 +3,7 @@
 import { type ComponentRenderProps } from "@json-render/react";
 import { useData, useFieldValidation } from "@json-render/react";
 import { getByPath } from "@json-render/core";
+import { useMemo } from "react";
 
 export function TextField({ element }: ComponentRenderProps) {
   const { label, valuePath, placeholder, type, checks, validateOn } =
@@ -23,10 +24,18 @@ export function TextField({ element }: ComponentRenderProps) {
 
   const { data, set } = useData();
   const value = getByPath(data, valuePath) as string | undefined;
-  const { errors, validate, touch } = useFieldValidation(valuePath, {
-    checks: checks ?? undefined,
-    validateOn: (validateOn as "change" | "blur" | "submit") ?? "blur",
-  });
+  const validationConfig = useMemo(
+    () => ({
+      checks: checks ?? undefined,
+      validateOn: (validateOn as "change" | "blur" | "submit") ?? "blur",
+    }),
+    [checks, validateOn],
+  );
+
+  const { errors, validate, touch } = useFieldValidation(
+    valuePath,
+    validationConfig,
+  );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>

@@ -6,11 +6,12 @@ import {
   ActionProvider,
   VisibilityProvider,
   ValidationProvider,
+  useData,
   useUIStream,
   Renderer,
 } from "@json-render/react";
 import { usePathname, useRouter } from "next/navigation";
-import type { UITree } from "@json-render/core";
+import { getByPath, type UITree } from "@json-render/core";
 import { Button } from "@/components/ui/button";
 import { ObjectView } from "@/components/object-view";
 import {
@@ -79,12 +80,18 @@ import {
 import { TASKS } from "@/lib/tasks";
 
 type StoredTree = UITree;
-type RecentItem = {
+type RecentBase = {
   id: string;
-  prompt: string;
-  tree: StoredTree;
   createdAt: number;
   updatedAt: number;
+};
+type RecentItem = RecentBase & {
+  prompt: string;
+  tree: StoredTree;
+};
+type RecentObjectItem = RecentBase & {
+  objectType: string;
+  objectId: string;
 };
 type SystemViewEntry = SystemView;
 type RegenerationTarget = {
@@ -109,11 +116,13 @@ type RouteSelection =
 const buildViewRoute = (id: string) => `/views/${encodeURIComponent(id)}`;
 const buildObjectRoute = (type: string, id: string) =>
   `/objects/${encodeURIComponent(type)}/${encodeURIComponent(id)}`;
+const buildObjectRecentId = (type: string, id: string) =>
+  `object:${type}:${id}`;
 
-const getRecency = (item: RecentItem) => item.updatedAt ?? item.createdAt;
+const getRecency = (item: RecentBase) => item.updatedAt ?? item.createdAt;
 
-const mergeRecents = (items: RecentItem[], incoming: RecentItem[]) => {
-  const map = new Map<string, RecentItem>();
+const mergeRecents = <T extends RecentBase>(items: T[], incoming: T[]) => {
+  const map = new Map<string, T>();
   items.forEach((item) => map.set(item.id, item));
   incoming.forEach((item) => {
     const existing = map.get(item.id);
@@ -431,6 +440,7 @@ const PROMPT_SUGGESTIONS = [
 
 const LEGACY_SYSTEM_VIEW_PREFIX = "system-";
 const RECENT_REORDER_DELAY_MS = 400;
+const RECENT_OBJECT_STORAGE_KEY = "recent-object-views";
 
 const SYSTEM_VIEW_ICONS = {
   "dashboard": LayoutDashboard,
@@ -439,10 +449,59 @@ const SYSTEM_VIEW_ICONS = {
   "settings": Settings,
 };
 
+const OBJECT_TYPE_ICONS = {
+  "tasks": ListTodo,
+  "accounts": BriefcaseBusiness,
+};
+
+const parseRecentObjectItems = (raw: string | null): RecentObjectItem[] => {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    const now = Date.now();
+    const items = parsed.flatMap((entry) => {
+      if (!entry || typeof entry !== "object") return [];
+      const record = entry as Record<string, unknown>;
+      if (typeof record.objectType !== "string") return [];
+      if (typeof record.objectId !== "string") return [];
+      const createdAt =
+        typeof record.createdAt === "number" && Number.isFinite(record.createdAt)
+          ? record.createdAt
+          : now;
+      const updatedAt =
+        typeof record.updatedAt === "number" && Number.isFinite(record.updatedAt)
+          ? record.updatedAt
+          : createdAt;
+      return [
+        {
+          id: buildObjectRecentId(record.objectType, record.objectId),
+          objectType: record.objectType,
+          objectId: record.objectId,
+          createdAt,
+          updatedAt,
+        },
+      ];
+    });
+    return mergeRecents([], items);
+  } catch (err) {
+    console.warn("Failed to parse recent object views", err);
+    return [];
+  }
+};
+
+const getStoredRecentObjectItems = (): RecentObjectItem[] => {
+  if (typeof window === "undefined") return [];
+  return parseRecentObjectItems(
+    window.localStorage.getItem(RECENT_OBJECT_STORAGE_KEY),
+  );
+};
+
 function DashboardContent() {
   const router = useRouter();
   const pathname = usePathname();
   const routeSelection = useMemo(() => parsePathname(pathname), [pathname]);
+  const { data } = useData();
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [activeWorkspace, setActiveWorkspace] = useState("Acme Corp");
@@ -451,6 +510,12 @@ function DashboardContent() {
   const [prompt, setPrompt] = useState("");
   const [systemViews, setSystemViews] = useState<SystemViewEntry[]>(SYSTEM_VIEWS);
   const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
+  const [recentObjectItems, setRecentObjectItems] = useState<
+    RecentObjectItem[]
+  >(getStoredRecentObjectItems);
+  const [objectRecentsLoaded, setObjectRecentsLoaded] = useState(
+    () => typeof window !== "undefined",
+  );
   const [activeViewId, setActiveViewId] = useState<string | null>(
     DEFAULT_SYSTEM_VIEW?.id ?? null,
   );
@@ -518,6 +583,27 @@ function DashboardContent() {
     const candidate = id.slice(LEGACY_SYSTEM_VIEW_PREFIX.length);
     return systemViewIdSetRef.current.has(candidate) ? candidate : null;
   }, []);
+  const getObjectRecentLabel = useCallback(
+    (objectType: string, objectId: string) => {
+      const definition = getObjectDefinition(objectType);
+      const label = definition?.label ?? objectType;
+      if (!definition) {
+        return `${label} · ${objectId}`;
+      }
+      const items = getByPath(data, definition.dataPath) as
+        | Record<string, unknown>[]
+        | undefined;
+      const match = Array.isArray(items)
+        ? items.find(
+            (entry) => String(entry[definition.idKey]) === objectId,
+          )
+        : null;
+      const titleValue = match?.[definition.titleKey];
+      const title = titleValue ? String(titleValue) : objectId;
+      return `${title}`;
+    },
+    [data],
+  );
   const scheduleRecentUpsert = useCallback(
     (item: RecentItem, delayMs: number) => {
       const timers = recentUpdateTimersRef.current;
@@ -533,10 +619,23 @@ function DashboardContent() {
     },
     [],
   );
-  const visibleRecentItems = useMemo(
+  const visibleRecentViews = useMemo(
     () => recentItems.filter((item) => !normalizeSystemViewId(item.id)),
     [recentItems, systemViews, normalizeSystemViewId],
   );
+  const recentEntries = useMemo(() => {
+    const viewEntries = visibleRecentViews.map((item) => ({
+      kind: "view" as const,
+      item,
+    }));
+    const objectEntries = recentObjectItems.map((item) => ({
+      kind: "object" as const,
+      item,
+    }));
+    return [...viewEntries, ...objectEntries].sort(
+      (a, b) => getRecency(b.item) - getRecency(a.item),
+    );
+  }, [recentObjectItems, visibleRecentViews]);
 
   const handleShareLink = useCallback(async () => {
     if (typeof window === "undefined") return;
@@ -579,6 +678,27 @@ function DashboardContent() {
   useEffect(() => {
     recentItemsRef.current = recentItems;
   }, [recentItems]);
+
+  useEffect(() => {
+    if (objectRecentsLoaded) return;
+    if (typeof window === "undefined") return;
+    const storedItems = getStoredRecentObjectItems();
+    setRecentObjectItems((items) => mergeRecents(items, storedItems));
+    setObjectRecentsLoaded(true);
+  }, [objectRecentsLoaded]);
+
+  useEffect(() => {
+    if (!objectRecentsLoaded) return;
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        RECENT_OBJECT_STORAGE_KEY,
+        JSON.stringify(recentObjectItems),
+      );
+    } catch (err) {
+      console.warn("Failed to store recent object views", err);
+    }
+  }, [objectRecentsLoaded, recentObjectItems]);
 
   useEffect(() => {
     if (hasLoadedViewsRef.current) return;
@@ -797,6 +917,12 @@ function DashboardContent() {
     },
     [router],
   );
+  const navigateToObject = useCallback(
+    (type: string, id: string) => {
+      router.push(buildObjectRoute(type, id));
+    },
+    [router],
+  );
 
   const handleRecentSelect = useCallback((item: RecentItem) => {
     if (activeViewId === item.id) {
@@ -805,6 +931,18 @@ function DashboardContent() {
     }
     navigateToView(item.id);
   }, [activeViewId, navigateToView, openCommandMenu]);
+  const handleRecentObjectSelect = useCallback(
+    (item: RecentObjectItem) => {
+      if (
+        activeObject?.type === item.objectType &&
+        activeObject?.id === item.objectId
+      ) {
+        return;
+      }
+      navigateToObject(item.objectType, item.objectId);
+    },
+    [activeObject, navigateToObject],
+  );
 
   const handleSystemViewSelect = useCallback((view: SystemViewEntry) => {
     if (activeViewId === view.id) {
@@ -839,11 +977,23 @@ function DashboardContent() {
     if (routeSelection.kind !== "object") return;
     setPersistenceError(null);
     setActiveViewId(null);
-    setActiveObject({
-      type: routeSelection.objectType,
-      id: routeSelection.objectId,
-    });
+    const objectType = routeSelection.objectType;
+    const objectId = routeSelection.objectId;
+    setActiveObject({ type: objectType, id: objectId });
     setActiveTree(null);
+    setRecentObjectItems((items) => {
+      const now = Date.now();
+      const id = buildObjectRecentId(objectType, objectId);
+      const existing = items.find((item) => item.id === id);
+      const nextItem: RecentObjectItem = {
+        id,
+        objectType,
+        objectId,
+        createdAt: existing?.createdAt ?? now,
+        updatedAt: now,
+      };
+      return mergeRecents(items, [nextItem]);
+    });
   }, [routeSelection]);
 
   useEffect(() => {
@@ -1119,30 +1269,50 @@ function DashboardContent() {
               <SidebarGroupLabel>Recent</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {visibleRecentItems.length === 0 ? (
+                  {recentEntries.length === 0 ? (
                     <SidebarMenuItem>
                       <SidebarMenuButton
                         disabled
-                        tooltip="No recent generations"
+                        tooltip="No recent views"
                       >
                         <Clock />
-                        <span>No recent generations</span>
+                        <span>No recent views</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ) : (
-                    visibleRecentItems.map((item) => (
-                      <SidebarMenuItem key={item.id}>
-                        <SidebarMenuButton
-                          tooltip={item.prompt}
-                          isActive={activeViewId === item.id}
-                          onClick={() => handleRecentSelect(item)}
-                          disabled={isStreaming}
-                        >
-                          <Clock />
-                          <span>{item.prompt}</span>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))
+                    recentEntries.map((entry) => {
+                      const isView = entry.kind === "view";
+                      const label = isView
+                        ? entry.item.prompt
+                        : getObjectRecentLabel(
+                            entry.item.objectType,
+                            entry.item.objectId,
+                          );
+                      const Icon =
+                        entry.kind === "object"
+                          ? OBJECT_TYPE_ICONS[entry.item.objectType] ?? Clock
+                          : Clock;
+                      const isActive = isView
+                        ? activeViewId === entry.item.id
+                        : activeObject?.type === entry.item.objectType &&
+                          activeObject?.id === entry.item.objectId;
+                      const handleClick = isView
+                        ? () => handleRecentSelect(entry.item)
+                        : () => handleRecentObjectSelect(entry.item);
+                      return (
+                        <SidebarMenuItem key={entry.item.id}>
+                          <SidebarMenuButton
+                            tooltip={label}
+                            isActive={isActive}
+                            onClick={handleClick}
+                            disabled={isStreaming}
+                          >
+                            <Icon />
+                            <span>{label}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    })
                   )}
                 </SidebarMenu>
               </SidebarGroupContent>

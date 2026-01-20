@@ -41,6 +41,7 @@ export {
 export { Empty } from "./empty";
 export { Grid } from "./grid";
 export { Heading } from "./heading";
+export { Input } from "./input";
 export { List } from "./list";
 export { Metric } from "./metric";
 export {
@@ -94,6 +95,7 @@ export {
 } from "./sheet";
 export { Stack } from "./stack";
 export { Table } from "./table";
+export { TableEmpty } from "./table-empty";
 export { Text } from "./text";
 export { TextField } from "./text-field";
 export {
@@ -103,7 +105,9 @@ export {
   TooltipTrigger,
 } from "./tooltip";
 export { DataTable } from "./data-table";
-export { Tabs } from "./tabs";
+export { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
+export { RenderTabs } from "./render-tabs";
+export { TasksTable } from "./tasks-table";
 
 import { Alert } from "./alert";
 import { Badge } from "./badge";
@@ -122,9 +126,10 @@ import { RenderButton } from "./render-button";
 import { Select } from "./select";
 import { Stack } from "./stack";
 import { Table } from "./table";
-import { Tabs } from "./tabs";
+import { RenderTabs } from "./render-tabs";
 import { Text } from "./text";
 import { TextField } from "./text-field";
+import { TasksTable } from "./tasks-table";
 
 export const componentRegistry = {
   Alert,
@@ -144,7 +149,8 @@ export const componentRegistry = {
   Select,
   Stack,
   Table,
-  Tabs,
+  Tabs: RenderTabs,
+  TasksTable,
   Text,
   TextField,
 };

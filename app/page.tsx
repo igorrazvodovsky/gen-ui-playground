@@ -63,6 +63,7 @@ import {
   Inbox,
   Info,
   LayoutDashboard,
+  ListTodo,
   LogOut,
   Plus,
   Search,
@@ -78,6 +79,7 @@ import {
   SYSTEM_VIEWS,
   type SystemView,
 } from "@/lib/system-views";
+import { TASKS } from "@/lib/tasks";
 
 type StoredTree = UITree;
 type RecentItem = {
@@ -332,6 +334,9 @@ const INITIAL_DATA = {
       },
     ],
   },
+  tasks: {
+    items: TASKS,
+  },
 };
 
 const ACTION_HANDLERS = {
@@ -358,6 +363,7 @@ const PROMPT_SUGGESTIONS = [
 
 const SYSTEM_VIEW_ICONS = {
   "system-dashboard": LayoutDashboard,
+  "system-tasks": ListTodo,
   "system-accounts": BriefcaseBusiness,
   "system-settings": Settings,
 };

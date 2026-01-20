@@ -15,6 +15,7 @@ COMPONENT DETAILS:
 - Metric: { label: string, valuePath: string, format?: "number"|"currency"|"percent", trend?: "up"|"down"|"neutral", trendValue?: string }
 - Chart: { type: "bar"|"line"|"pie"|"area", dataPath: string, title?: string, height?: number }
 - Table: { title?: string, dataPath: string, columns: [{ key: string, label: string, format?: "text"|"currency"|"date"|"badge" }] }
+- DataTable: { title?: string, dataPath: string, columns: [{ key: string, label: string, format?: "text"|"currency"|"date"|"badge", sortable?: boolean }], enableSelection?: boolean, searchPath?: string, hideSearch?: boolean, initialSort?: { key: string, direction: "asc"|"desc" }, searchKey?: string, emptyMessage?: string, filterField?: string, filterEventName?: string }
 - Button: { label: string, action: string, variant?: "primary"|"secondary"|"danger"|"ghost", size?: "sm"|"md"|"lg", disabled?: boolean }
 - Heading: { text: string, level?: "h1"|"h2"|"h3"|"h4" }
 - Text: { content: string, variant?: "body"|"caption"|"label", color?: "default"|"muted"|"success"|"warning"|"danger" }
@@ -24,8 +25,10 @@ COMPONENT DETAILS:
 - DatePicker: { label?: string, valuePath: string, placeholder?: string }
 - TextField: { label?: string, valuePath: string, placeholder?: string, type?: string, checks?: [{ fn: string, message: string, args?: Record<string, unknown> }], validateOn?: "change"|"blur"|"submit" }
 - List: { dataPath: string, emptyMessage?: string }
+- Tabs: { items: [{ value: string, label: string, action?: string, params?: Record<string, unknown> }], defaultValue?: string }
 - Divider: { label?: string }
 - Empty: { title: string, description?: string, action?: string, actionLabel?: string }
+- TasksTable: { dataPath?: string } - Tasks table (defaults to /tasks/items)
 
 DATA BINDING:
 - valuePath: "/analytics/revenue" (for single values like Metric, TextField, Select)

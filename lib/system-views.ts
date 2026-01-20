@@ -354,6 +354,19 @@ const dashboardTree: UITree = {
   },
 };
 
+const tasksTree: UITree = {
+  root: "system-tasks",
+  elements: {
+    "system-tasks": {
+      key: "system-tasks",
+      type: "TasksTable",
+      props: {
+        dataPath: "/tasks/items",
+      },
+    },
+  },
+};
+
 const accountsTree: UITree = {
   root: "system-accounts",
   elements: {
@@ -721,6 +734,13 @@ const settingsTree: UITree = {
 
 export const SYSTEM_VIEWS: SystemView[] = [
   {
+    id: "system-tasks",
+    label: "Tasks",
+    prompt:
+      "Task tracker with filters, column toggles, row actions, and pagination.",
+    tree: tasksTree,
+  },
+  {
     id: "system-dashboard",
     label: "Dashboard",
     prompt:
@@ -743,7 +763,7 @@ export const SYSTEM_VIEWS: SystemView[] = [
   },
 ];
 
-export const DEFAULT_SYSTEM_VIEW_ID = "system-dashboard";
+export const DEFAULT_SYSTEM_VIEW_ID = "system-tasks";
 export const DEFAULT_SYSTEM_VIEW =
   SYSTEM_VIEWS.find((view) => view.id === DEFAULT_SYSTEM_VIEW_ID) ??
   SYSTEM_VIEWS[0] ??

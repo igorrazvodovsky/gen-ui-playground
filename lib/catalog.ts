@@ -253,6 +253,12 @@ export const dashboardCatalog = createCatalog({
       }),
       description: "Empty state placeholder",
     },
+    TasksTable: {
+      props: z.object({
+        dataPath: z.string().nullable(),
+      }),
+      description: "Tasks table with filters, columns, and row actions",
+    },
   },
   actions: {
     export_report: { description: "Export the current dashboard to PDF" },

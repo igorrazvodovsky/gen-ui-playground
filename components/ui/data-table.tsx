@@ -14,11 +14,22 @@ import { type ComponentRenderProps } from "@json-render/react";
 import { useData } from "@json-render/react";
 import { useEffect, useMemo, useState } from "react";
 import { Checkbox } from "./checkbox";
+import { formatTableCell } from "@/lib/table-format";
+import { TableEmpty } from "@/components/ui/table-empty";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table-primitives";
 
 type TableColumn = {
   key: string;
   label: string;
-  format?: string | null;
+  format?: "text" | "currency" | "date" | "badge" | null;
   sortable?: boolean | null;
 };
 
@@ -149,7 +160,10 @@ export function DataTable({ element }: ComponentRenderProps) {
             </button>
           );
         },
-        cell: ({ getValue }) => formatCell(getValue(), col.format),
+        cell: ({ getValue }) =>
+          formatTableCell(getValue(), col.format, {
+            currency: { maximumFractionDigits: 0 },
+          }),
         enableSorting: !!col.sortable,
       });
     });
@@ -209,11 +223,7 @@ export function DataTable({ element }: ComponentRenderProps) {
   });
 
   if (!filteredRows || filteredRows.length === 0) {
-    return (
-      <div className="rounded-md border border-dashed border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-        {emptyMessage ?? "No data"}
-      </div>
-    );
+    return <TableEmpty message={emptyMessage ?? "No data"} />;
   }
 
   return (
@@ -221,79 +231,63 @@ export function DataTable({ element }: ComponentRenderProps) {
       {!searchPath && !hideSearch && (
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <input
+            <Input
               type="search"
               placeholder="Search..."
               value={globalFilter ?? ""}
               onChange={(e) => setGlobalFilter(e.target.value)}
-              className="h-9 rounded-md border border-border/80 bg-background px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+              className="h-8 w-[200px]"
             />
           </div>
         </div>
       )}
-
-      <div className="w-full overflow-auto rounded-xl border border-border/80 bg-card/80 shadow-sm">
-        <table className="w-full min-w-[720px] border-collapse text-sm">
-          <thead className="bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="px-4 py-3 text-left font-medium"
-                    style={{ width: header.getSize() ? `${header.getSize()}px` : undefined }}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody className="divide-y divide-border/70">
-            {table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className="bg-card transition-colors hover:bg-muted/30"
-                data-state={row.getIsSelected() ? "selected" : undefined}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-3 align-middle">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        containerClassName="w-full overflow-auto rounded-xl border border-border/80 bg-card/80 shadow-sm"
+        className="min-w-[720px] border-collapse text-sm"
+      >
+        <TableHeader className="text-xs uppercase tracking-wide text-muted-foreground">
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead
+                  key={header.id}
+                  className="h-auto px-4 py-3 text-left font-medium whitespace-normal"
+                  style={{
+                    width: header.getSize()
+                      ? `${header.getSize()}px`
+                      : undefined,
+                  }}
+                >
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody className="divide-y divide-border/70">
+          {table.getRowModel().rows.map((row) => (
+            <TableRow
+              key={row.id}
+              data-state={row.getIsSelected() ? "selected" : undefined}
+            >
+              {row.getVisibleCells().map((cell) => (
+                <TableCell
+                  key={cell.id}
+                  className="px-4 py-3 align-middle whitespace-normal"
+                >
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
 
     </div>
   );
-}
-
-function formatCell(value: unknown, format?: string | null) {
-  if (value === null || value === undefined) return "-";
-  if (format === "currency" && typeof value === "number") {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(value);
-  }
-  if (format === "date" && typeof value === "string") {
-    return new Date(value).toLocaleDateString();
-  }
-  if (format === "badge") {
-    return (
-      <span className="inline-flex items-center rounded-full bg-muted/70 px-2.5 py-1 text-xs font-medium text-foreground">
-        {String(value)}
-      </span>
-    );
-  }
-  return String(value);
 }

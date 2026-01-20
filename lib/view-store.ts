@@ -13,6 +13,12 @@ export type StoredView = {
   updatedAt: number;
 };
 
+export type SeedView = {
+  id: string;
+  prompt: string;
+  tree: UITree;
+};
+
 type DbRow = {
   id: string;
   prompt: string;
@@ -82,6 +88,22 @@ export async function createView(input: {
     createdAt: now,
     updatedAt: now,
   };
+}
+
+export async function ensureSeedViews(views: SeedView[]): Promise<void> {
+  if (views.length === 0) return;
+  const db = getDb();
+  const now = Date.now();
+  const insert = db.prepare(
+    `INSERT OR IGNORE INTO views (id, prompt, tree, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?)`,
+  );
+  const insertMany = db.transaction((seedViews: SeedView[]) => {
+    seedViews.forEach((view) => {
+      insert.run(view.id, view.prompt, JSON.stringify(view.tree), now, now);
+    });
+  });
+  insertMany(views);
 }
 
 export async function updateView(

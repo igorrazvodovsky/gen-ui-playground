@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { touchView, updateView } from "@/lib/view-store";
+import { SYSTEM_VIEW_SEEDS } from "@/lib/system-views";
+import { ensureSeedViews, touchView, updateView } from "@/lib/view-store";
 
 export const runtime = "nodejs";
 
@@ -7,6 +8,7 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  await ensureSeedViews(SYSTEM_VIEW_SEEDS);
   const { id } = await params;
   const view = await touchView(id);
   if (!view) {
@@ -19,6 +21,7 @@ export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  await ensureSeedViews(SYSTEM_VIEW_SEEDS);
   const { id } = await params;
   const body = await req.json();
   const prompt = typeof body?.prompt === "string" ? body.prompt : undefined;

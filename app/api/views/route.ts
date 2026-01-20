@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { createView, listViews } from "@/lib/view-store";
+import { SYSTEM_VIEW_SEEDS } from "@/lib/system-views";
+import { createView, ensureSeedViews, listViews } from "@/lib/view-store";
 
 export const runtime = "nodejs";
 
 export async function GET(req: Request) {
+  await ensureSeedViews(SYSTEM_VIEW_SEEDS);
   const { searchParams } = new URL(req.url);
   const limitParam = searchParams.get("limit");
   const limit = limitParam ? Number.parseInt(limitParam, 10) : null;
@@ -16,6 +18,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  await ensureSeedViews(SYSTEM_VIEW_SEEDS);
   const body = await req.json();
   const prompt = typeof body?.prompt === "string" ? body.prompt : null;
   const tree = body?.tree;

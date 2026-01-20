@@ -28,7 +28,7 @@ export const OBJECT_DEFINITIONS: Record<string, ObjectDefinition> = {
     dataPath: "/accounts/list",
     idKey: "id",
     titleKey: "name",
-    listRoute: "/views/system/system-accounts",
+    listRoute: "/views/accounts",
     meta: [{ key: "owner", label: "Owner" }],
     badges: [
       { key: "status", label: "Status", format: "badge" },
@@ -48,7 +48,7 @@ export const OBJECT_DEFINITIONS: Record<string, ObjectDefinition> = {
     dataPath: "/tasks/items",
     idKey: "id",
     titleKey: "title",
-    listRoute: "/views/system/system-tasks",
+    listRoute: "/views/tasks",
     meta: [{ key: "id", label: "Task ID" }],
     badges: [
       { key: "status", label: "Status", format: "badge" },

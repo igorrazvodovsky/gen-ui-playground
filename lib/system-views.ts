@@ -8,10 +8,10 @@ export type SystemView = {
 };
 
 const dashboardTree: UITree = {
-  root: "system-dashboard",
+  root: "dashboard",
   elements: {
-    "system-dashboard": {
-      key: "system-dashboard",
+    "dashboard": {
+      key: "dashboard",
       type: "Stack",
       props: {
         direction: "vertical",
@@ -355,10 +355,10 @@ const dashboardTree: UITree = {
 };
 
 const tasksTree: UITree = {
-  root: "system-tasks",
+  root: "tasks",
   elements: {
-    "system-tasks": {
-      key: "system-tasks",
+    "tasks": {
+      key: "tasks",
       type: "TasksTable",
       props: {
         dataPath: "/tasks/items",
@@ -368,10 +368,10 @@ const tasksTree: UITree = {
 };
 
 const accountsTree: UITree = {
-  root: "system-accounts",
+  root: "accounts",
   elements: {
-    "system-accounts": {
-      key: "system-accounts",
+    "accounts": {
+      key: "accounts",
       type: "Stack",
       props: {
         direction: "vertical",
@@ -499,10 +499,10 @@ const accountsTree: UITree = {
 };
 
 const settingsTree: UITree = {
-  root: "system-settings",
+  root: "settings",
   elements: {
-    "system-settings": {
-      key: "system-settings",
+    "settings": {
+      key: "settings",
       type: "Stack",
       props: {
         direction: "vertical",
@@ -735,28 +735,28 @@ const settingsTree: UITree = {
 
 export const SYSTEM_VIEWS: SystemView[] = [
   {
-    id: "system-tasks",
-    label: "Tasks",
-    prompt:
-      "Task tracker with filters, column toggles, row actions, and pagination.",
-    tree: tasksTree,
-  },
-  {
-    id: "system-dashboard",
+    id: "dashboard",
     label: "Dashboard",
     prompt:
       "Executive dashboard with revenue metrics, visitor trend chart, and document outline table.",
     tree: dashboardTree,
   },
   {
-    id: "system-accounts",
+    id: "tasks",
+    label: "Tasks",
+    prompt:
+      "Task tracker with filters, column toggles, row actions, and pagination.",
+    tree: tasksTree,
+  },
+  {
+    id: "accounts",
     label: "Accounts",
     prompt:
       "Accounts overview with tabs, search, and a sortable table for ARR, status, and renewals.",
     tree: accountsTree,
   },
   {
-    id: "system-settings",
+    id: "settings",
     label: "Settings",
     prompt:
       "Workspace settings with profile fields, preferences, and active sessions.",
@@ -764,7 +764,15 @@ export const SYSTEM_VIEWS: SystemView[] = [
   },
 ];
 
-export const DEFAULT_SYSTEM_VIEW_ID = "system-tasks";
+export const SYSTEM_VIEW_SEEDS = SYSTEM_VIEWS.map(({ id, prompt, tree }) => ({
+  id,
+  prompt,
+  tree,
+}));
+
+export const SYSTEM_VIEW_IDS = SYSTEM_VIEWS.map((view) => view.id);
+
+export const DEFAULT_SYSTEM_VIEW_ID = "tasks";
 export const DEFAULT_SYSTEM_VIEW =
   SYSTEM_VIEWS.find((view) => view.id === DEFAULT_SYSTEM_VIEW_ID) ??
   SYSTEM_VIEWS[0] ??

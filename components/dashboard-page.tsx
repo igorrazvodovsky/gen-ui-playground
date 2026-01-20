@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   DataProvider,
   ActionProvider,
@@ -9,8 +9,10 @@ import {
   useUIStream,
   Renderer,
 } from "@json-render/react";
+import { usePathname, useRouter } from "next/navigation";
 import type { UITree } from "@json-render/core";
 import { Button } from "@/components/ui/button";
+import { ObjectView } from "@/components/object-view";
 import {
   Sidebar,
   SidebarContent,
@@ -36,7 +38,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   CommandDialog,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -51,16 +52,11 @@ import {
   BarChart,
   Bell,
   BriefcaseBusiness,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
   PanelRight,
   ChevronsUpDown,
   Clock,
   FileText,
   HelpCircle,
-  Home,
-  Inbox,
   Info,
   LayoutDashboard,
   ListTodo,
@@ -74,6 +70,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { componentRegistry } from "@/components/ui";
+import { getObjectDefinition } from "@/lib/object-definitions";
 import {
   DEFAULT_SYSTEM_VIEW,
   SYSTEM_VIEWS,
@@ -87,14 +84,88 @@ type RecentItem = {
   prompt: string;
   tree: StoredTree;
   createdAt: number;
+  updatedAt: number;
 };
 type SystemViewEntry = SystemView;
 type RegenerationTarget = {
   type: "recent" | "system";
   id: string;
 };
+type StoredView = {
+  id: string;
+  prompt: string;
+  tree: StoredTree;
+  createdAt: number;
+  updatedAt: number;
+};
+type ObjectRoute = {
+  type: string;
+  id: string;
+};
+type RouteSelection =
+  | { kind: "root" }
+  | { kind: "system"; id: string }
+  | { kind: "generated"; id: string }
+  | { kind: "object"; objectType: string; objectId: string };
 
-const MAX_RECENT = 5;
+const buildSystemRoute = (id: string) =>
+  `/views/system/${encodeURIComponent(id)}`;
+const buildGeneratedRoute = (id: string) =>
+  `/views/generated/${encodeURIComponent(id)}`;
+const buildObjectRoute = (type: string, id: string) =>
+  `/objects/${encodeURIComponent(type)}/${encodeURIComponent(id)}`;
+
+const getRecency = (item: RecentItem) => item.updatedAt ?? item.createdAt;
+
+const mergeRecents = (items: RecentItem[], incoming: RecentItem[]) => {
+  const map = new Map<string, RecentItem>();
+  items.forEach((item) => map.set(item.id, item));
+  incoming.forEach((item) => {
+    const existing = map.get(item.id);
+    if (!existing || getRecency(item) >= getRecency(existing)) {
+      map.set(item.id, item);
+    }
+  });
+  return Array.from(map.values()).sort((a, b) => getRecency(b) - getRecency(a));
+};
+
+const parsePathname = (pathname: string): RouteSelection => {
+  const parts = pathname.split("/").filter(Boolean);
+  if (parts.length === 0) return { kind: "root" };
+  if (parts[0] === "views" && parts[1] === "system" && parts[2]) {
+    return { kind: "system", id: decodeURIComponent(parts[2]) };
+  }
+  if (parts[0] === "views" && parts[1] === "generated" && parts[2]) {
+    return { kind: "generated", id: decodeURIComponent(parts[2]) };
+  }
+  if (parts[0] === "objects" && parts[1] && parts[2]) {
+    return {
+      kind: "object",
+      objectType: decodeURIComponent(parts[1]),
+      objectId: decodeURIComponent(parts[2]),
+    };
+  }
+  return { kind: "root" };
+};
+
+const resolveObjectTarget = (
+  params: Record<string, unknown> | undefined,
+): ObjectRoute | null => {
+  const type =
+    typeof params?.type === "string"
+      ? params.type
+      : typeof params?.objectType === "string"
+        ? params.objectType
+        : null;
+  const id =
+    typeof params?.id === "string"
+      ? params.id
+      : typeof params?.objectId === "string"
+        ? params.objectId
+        : null;
+  if (!type || !id) return null;
+  return { type, id };
+};
 
 const INITIAL_DATA = {
   analytics: {
@@ -339,20 +410,6 @@ const INITIAL_DATA = {
   },
 };
 
-const ACTION_HANDLERS = {
-  export_report: () => alert("Exporting report..."),
-  refresh_data: () => alert("Refreshing data..."),
-  view_details: (params: Record<string, unknown>) =>
-    alert(`Details: ${JSON.stringify(params)}`),
-  apply_filter: () => alert("Applying filters..."),
-  filter_accounts: (params: Record<string, unknown>) => {
-    const status = typeof params?.status === "string" ? params.status : "all";
-    window.dispatchEvent(
-      new CustomEvent("accounts-filter", { detail: { status } }),
-    );
-  },
-};
-
 const WORKSPACES = ["Acme Corp", "Personal", "Team Project"];
 
 const PROMPT_SUGGESTIONS = [
@@ -369,6 +426,9 @@ const SYSTEM_VIEW_ICONS = {
 };
 
 function DashboardContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const routeSelection = useMemo(() => parsePathname(pathname), [pathname]);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [activeWorkspace, setActiveWorkspace] = useState("Acme Corp");
@@ -384,11 +444,20 @@ function DashboardContent() {
   const [activeTree, setActiveTree] = useState<StoredTree | null>(
     DEFAULT_SYSTEM_VIEW?.tree ?? null,
   );
+  const [activeObject, setActiveObject] = useState<ObjectRoute | null>(null);
+  const [persistenceError, setPersistenceError] = useState<string | null>(null);
+  const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "error">(
+    "idle",
+  );
   const generationIdRef = useRef(0);
   const lastStoredGenerationRef = useRef(0);
   const lastPromptRef = useRef<string | null>(null);
   const regenerationTargetRef = useRef<RegenerationTarget | null>(null);
   const promptEditBaselineRef = useRef<string | null>(null);
+  const shareResetRef = useRef<number | null>(null);
+  const pendingViewRef = useRef<StoredView | null>(null);
+  const hasLoadedRecentsRef = useRef(false);
+  const recentItemsRef = useRef<RecentItem[]>([]);
   const { tree, isStreaming, error, send } = useUIStream({
     api: "/api/generate",
     onError: (err) => console.error("Generation error:", err),
@@ -405,12 +474,18 @@ function DashboardContent() {
     (view) => view.id === activeSystemViewId,
   );
   const activeRecent = recentItems.find((item) => item.id === activeRecentId);
+  const activeObjectDefinition = useMemo(
+    () => (activeObject ? getObjectDefinition(activeObject.type) : null),
+    [activeObject],
+  );
   const activePrompt = activeSystemView?.prompt ?? activeRecent?.prompt ?? "";
-  const isPromptEditable = !!activeSystemView || !!activeRecent;
-  const currentViewLabel =
-    activeSystemView?.label ??
-    activeRecent?.prompt ??
-    (isStreaming ? "Generating..." : "New view");
+  const isObjectView = !!activeObject;
+  const isPromptEditable = !isObjectView && (!!activeSystemView || !!activeRecent);
+  const currentViewLabel = isObjectView
+    ? `${activeObjectDefinition?.label ?? "Object"} · ${activeObject?.id ?? ""}`
+    : activeSystemView?.label ??
+      activeRecent?.prompt ??
+      (isStreaming ? "Generating..." : "New view");
   const normalizedPrompt = prompt.trim().toLowerCase();
   const suggestionMatches = normalizedPrompt
     ? PROMPT_SUGGESTIONS.filter(({ label }) =>
@@ -418,6 +493,65 @@ function DashboardContent() {
       )
     : PROMPT_SUGGESTIONS;
   const showSuggestions = suggestionMatches.length > 0;
+
+  const handleShareLink = useCallback(async () => {
+    if (typeof window === "undefined") return;
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setShareStatus("copied");
+    } catch (err) {
+      console.error("Share link error:", err);
+      setShareStatus("error");
+    }
+    if (shareResetRef.current) {
+      window.clearTimeout(shareResetRef.current);
+    }
+    shareResetRef.current = window.setTimeout(() => {
+      setShareStatus("idle");
+    }, 2000);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (shareResetRef.current) {
+        window.clearTimeout(shareResetRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    recentItemsRef.current = recentItems;
+  }, [recentItems]);
+
+  useEffect(() => {
+    if (hasLoadedRecentsRef.current) return;
+    hasLoadedRecentsRef.current = true;
+
+    const loadRecents = async () => {
+      try {
+        const response = await fetch("/api/views", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("Unable to load recent views.");
+        }
+        const views = (await response.json()) as StoredView[];
+        if (!Array.isArray(views)) return;
+
+        const fetched = views.map((view) => ({
+          id: view.id,
+          prompt: view.prompt,
+          tree: view.tree,
+          createdAt: view.createdAt,
+          updatedAt: view.updatedAt,
+        }));
+
+        setRecentItems((items) => mergeRecents(items, fetched));
+      } catch (err) {
+        console.warn("Failed to load recent views", err);
+      }
+    };
+
+    void loadRecents();
+  }, []);
 
   const openCommandMenu = useCallback(
     (mode: "new" | "edit", initialPrompt?: string) => {
@@ -434,6 +568,52 @@ function DashboardContent() {
     },
     [activePrompt],
   );
+
+  const persistView = useCallback(
+    async ({
+      id,
+      prompt: promptValue,
+      tree: treeValue,
+    }: {
+      id?: string;
+      prompt: string;
+      tree: StoredTree;
+    }) => {
+      const payload = JSON.stringify({ prompt: promptValue, tree: treeValue });
+      const endpoint = id ? `/api/views/${encodeURIComponent(id)}` : "/api/views";
+      let response = await fetch(endpoint, {
+        method: id ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      });
+
+      if (!response.ok && id && response.status === 404) {
+        response = await fetch("/api/views", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: payload,
+        });
+      }
+
+      if (!response.ok) {
+        throw new Error("Unable to save the generated view.");
+      }
+
+      return (await response.json()) as StoredView;
+    },
+    [],
+  );
+
+  const fetchViewById = useCallback(async (id: string) => {
+    const response = await fetch(`/api/views/${encodeURIComponent(id)}`, {
+      cache: "no-store",
+    });
+    if (response.status === 404) return null;
+    if (!response.ok) {
+      throw new Error("Unable to load the generated view.");
+    }
+    return (await response.json()) as StoredView;
+  }, []);
 
   const updateRecentPrompt = useCallback((id: string, nextPrompt: string) => {
     setRecentItems((items) =>
@@ -471,12 +651,14 @@ function DashboardContent() {
       const targetId = activeRecentId ?? activeSystemViewId;
       if (!targetId) return;
 
+      setPersistenceError(null);
       generationIdRef.current += 1;
       lastPromptRef.current = trimmed;
       regenerationTargetRef.current = activeRecentId
         ? { type: "recent", id: activeRecentId }
         : { type: "system", id: targetId };
       setActiveTree(null);
+      setActiveObject(null);
       setCommandOpen(false);
       setCommandMode("new");
       promptEditBaselineRef.current = null;
@@ -489,12 +671,14 @@ function DashboardContent() {
     async (value: string) => {
       const trimmed = value.trim();
       if (!trimmed || isStreaming) return;
+      setPersistenceError(null);
       generationIdRef.current += 1;
       lastPromptRef.current = trimmed;
       regenerationTargetRef.current = null;
       setActiveTree(null);
       setActiveRecentId(null);
       setActiveSystemViewId(null);
+      setActiveObject(null);
       setCommandOpen(false);
       setCommandMode("new");
       promptEditBaselineRef.current = null;
@@ -523,25 +707,146 @@ function DashboardContent() {
     [commandMode, handlePromptEdit, handlePromptRegenerate, handlePromptSubmit],
   );
 
+  const navigateToSystemView = useCallback(
+    (id: string) => {
+      router.push(buildSystemRoute(id));
+    },
+    [router],
+  );
+
+  const navigateToGeneratedView = useCallback(
+    (id: string) => {
+      router.push(buildGeneratedRoute(id));
+    },
+    [router],
+  );
+
   const handleRecentSelect = useCallback((item: RecentItem) => {
     if (activeRecentId === item.id) {
       openCommandMenu("edit", item.prompt);
       return;
     }
-    setActiveTree(item.tree);
-    setActiveRecentId(item.id);
-    setActiveSystemViewId(null);
-  }, [activeRecentId, openCommandMenu]);
+    navigateToGeneratedView(item.id);
+  }, [activeRecentId, navigateToGeneratedView, openCommandMenu]);
 
   const handleSystemViewSelect = useCallback((view: SystemViewEntry) => {
     if (activeSystemViewId === view.id) {
       openCommandMenu("edit", view.prompt);
       return;
     }
-    setActiveTree(view.tree);
+    navigateToSystemView(view.id);
+  }, [activeSystemViewId, navigateToSystemView, openCommandMenu]);
+
+  const handleObjectBack = useCallback(() => {
+    if (!activeObject) return;
+    const fallback =
+      DEFAULT_SYSTEM_VIEW?.id ? buildSystemRoute(DEFAULT_SYSTEM_VIEW.id) : "/";
+    const targetRoute = activeObjectDefinition?.listRoute ?? fallback;
+    router.push(targetRoute);
+  }, [activeObject, activeObjectDefinition, router]);
+
+  useEffect(() => {
+    if (routeSelection.kind === "object" || routeSelection.kind === "generated") {
+      return;
+    }
+    setPersistenceError(null);
+    const resolvedView =
+      routeSelection.kind === "system"
+        ? systemViews.find((view) => view.id === routeSelection.id) ??
+          DEFAULT_SYSTEM_VIEW
+        : DEFAULT_SYSTEM_VIEW;
+    setActiveSystemViewId(resolvedView?.id ?? null);
     setActiveRecentId(null);
-    setActiveSystemViewId(view.id);
-  }, [activeSystemViewId, openCommandMenu]);
+    setActiveObject(null);
+    setActiveTree(resolvedView?.tree ?? null);
+  }, [routeSelection, systemViews]);
+
+  useEffect(() => {
+    if (routeSelection.kind !== "object") return;
+    setPersistenceError(null);
+    setActiveSystemViewId(null);
+    setActiveRecentId(null);
+    setActiveObject({
+      type: routeSelection.objectType,
+      id: routeSelection.objectId,
+    });
+    setActiveTree(null);
+  }, [routeSelection]);
+
+  useEffect(() => {
+    if (routeSelection.kind !== "generated") return;
+    let cancelled = false;
+    setPersistenceError(null);
+    setActiveObject(null);
+    setActiveSystemViewId(null);
+    setActiveRecentId(routeSelection.id);
+
+    const pending = pendingViewRef.current;
+    if (pending && pending.id === routeSelection.id) {
+      pendingViewRef.current = null;
+      const item: RecentItem = {
+        id: pending.id,
+        prompt: pending.prompt,
+        tree: pending.tree,
+        createdAt: pending.createdAt,
+        updatedAt: pending.updatedAt,
+      };
+      setRecentItems((items) => mergeRecents(items, [item]));
+      setActiveTree(pending.tree);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const existing = recentItemsRef.current.find(
+      (item) => item.id === routeSelection.id,
+    );
+    const hasLocalView = !!existing;
+    if (existing) {
+      setActiveTree(existing.tree);
+    } else {
+      setActiveTree(null);
+    }
+
+    const load = async () => {
+      try {
+        const view = await fetchViewById(routeSelection.id);
+        if (cancelled) return;
+        if (!view) {
+          if (!hasLocalView) {
+            setPersistenceError("Generated view not found.");
+          }
+          return;
+        }
+        const item: RecentItem = {
+          id: view.id,
+          prompt: view.prompt,
+          tree: view.tree,
+          createdAt: view.createdAt,
+          updatedAt: view.updatedAt,
+        };
+        setRecentItems((items) => mergeRecents(items, [item]));
+        setActiveTree(view.tree);
+      } catch (err) {
+        if (cancelled) return;
+        if (hasLocalView) {
+          console.warn("Failed to refresh generated view", err);
+          return;
+        }
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Unable to load the generated view.";
+        setPersistenceError(message);
+      }
+    };
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchViewById, routeSelection]);
 
   useEffect(() => {
     if (!tree || isStreaming) return;
@@ -550,50 +855,94 @@ function DashboardContent() {
 
     const snapshot = JSON.parse(JSON.stringify(tree)) as StoredTree;
     const regenerationTarget = regenerationTargetRef.current;
-    if (regenerationTarget) {
-      if (regenerationTarget.type === "recent") {
-        setRecentItems((items) =>
-          items.map((item) =>
-            item.id === regenerationTarget.id
-              ? { ...item, tree: snapshot }
-              : item,
-          ),
-        );
-        setActiveRecentId(regenerationTarget.id);
-        setActiveSystemViewId(null);
-      } else {
-        setSystemViews((views) =>
-          views.map((view) =>
-            view.id === regenerationTarget.id ? { ...view, tree: snapshot } : view,
-          ),
-        );
-        setActiveSystemViewId(regenerationTarget.id);
-        setActiveRecentId(null);
-      }
-      setActiveTree(snapshot);
-      lastStoredGenerationRef.current = generationIdRef.current;
-      regenerationTargetRef.current = null;
-      return;
-    }
+    let cancelled = false;
 
-    if (!lastPromptRef.current) return;
-    const id = `generation-${generationIdRef.current}`;
-    const item: RecentItem = {
-      id,
-      prompt: lastPromptRef.current,
-      tree: snapshot,
-      createdAt: Date.now(),
+    const storeView = async () => {
+      try {
+        if (regenerationTarget?.type === "system") {
+          setSystemViews((views) =>
+            views.map((view) =>
+              view.id === regenerationTarget.id
+                ? { ...view, tree: snapshot }
+                : view,
+            ),
+          );
+          setActiveSystemViewId(regenerationTarget.id);
+          setActiveRecentId(null);
+          setActiveObject(null);
+          setActiveTree(snapshot);
+          lastStoredGenerationRef.current = generationIdRef.current;
+          regenerationTargetRef.current = null;
+          return;
+        }
+
+        const promptValue =
+          lastPromptRef.current ?? activePrompt ?? "Generated view";
+
+        if (regenerationTarget?.type === "recent") {
+          const stored = await persistView({
+            id: regenerationTarget.id,
+            prompt: promptValue,
+            tree: snapshot,
+          });
+          if (cancelled) return;
+          pendingViewRef.current = stored;
+          const updatedItem: RecentItem = {
+            id: stored.id,
+            prompt: stored.prompt,
+            tree: snapshot,
+            createdAt: stored.createdAt,
+            updatedAt: stored.updatedAt,
+          };
+          setRecentItems((items) => mergeRecents(items, [updatedItem]));
+          setActiveRecentId(stored.id);
+          setActiveSystemViewId(null);
+          setActiveObject(null);
+          setActiveTree(snapshot);
+          lastStoredGenerationRef.current = generationIdRef.current;
+          regenerationTargetRef.current = null;
+          router.replace(buildGeneratedRoute(stored.id));
+          return;
+        }
+
+        if (!lastPromptRef.current) return;
+        const stored = await persistView({
+          prompt: lastPromptRef.current,
+          tree: snapshot,
+        });
+        if (cancelled) return;
+        pendingViewRef.current = stored;
+        const item: RecentItem = {
+          id: stored.id,
+          prompt: stored.prompt,
+          tree: snapshot,
+          createdAt: stored.createdAt,
+          updatedAt: stored.updatedAt,
+        };
+
+        setRecentItems((items) => mergeRecents(items, [item]));
+        setActiveRecentId(stored.id);
+        setActiveTree(snapshot);
+        setActiveSystemViewId(null);
+        setActiveObject(null);
+        lastStoredGenerationRef.current = generationIdRef.current;
+        router.push(buildGeneratedRoute(stored.id));
+      } catch (err) {
+        if (cancelled) return;
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Unable to persist the generated view.";
+        setPersistenceError(message);
+      }
     };
 
-    setRecentItems((items) => {
-      const next = [item, ...items.filter((existing) => existing.id !== id)];
-      return next.slice(0, MAX_RECENT);
-    });
-    setActiveRecentId(id);
-    setActiveTree(snapshot);
-    setActiveSystemViewId(null);
-    lastStoredGenerationRef.current = generationIdRef.current;
-  }, [isStreaming, tree]);
+    void storeView();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activePrompt, isStreaming, persistView, router, tree]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -625,10 +974,10 @@ function DashboardContent() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [commandOpen, isEditableTarget, openCommandMenu]);
 
-  const displayTree = activeTree ?? tree;
+  const displayTree = isObjectView ? null : activeTree ?? tree;
   const hasElements =
     !!displayTree && Object.keys(displayTree.elements).length > 0;
-  const isStreamingDisplay = isStreaming && !activeTree;
+  const isStreamingDisplay = isStreaming && !activeTree && !isObjectView;
 
   return (
     <div className="flex h-screen bg-background">
@@ -640,6 +989,7 @@ function DashboardContent() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <SidebarMenuButton
+                      id="workspace-menu-trigger"
                       size="lg"
                       className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                     >
@@ -775,6 +1125,7 @@ function DashboardContent() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <SidebarMenuButton
+                      id="user-menu-trigger"
                       size="lg"
                       className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                     >
@@ -861,7 +1212,12 @@ function DashboardContent() {
                   aria-label="Open command menu"
                   className="absolute inset-0 w-full justify-start gap-2 text-muted-foreground opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100"
                   title="Command menu (⌘K / Ctrl+K)"
-                  onClick={() => openCommandMenu("edit", activePrompt)}
+                  onClick={() =>
+                    openCommandMenu(
+                      isPromptEditable ? "edit" : "new",
+                      isPromptEditable ? activePrompt : undefined,
+                    )
+                  }
                 >
                   <Search className="size-4" />
                   <span className="sr-only">Command menu</span>
@@ -966,8 +1322,25 @@ function DashboardContent() {
                     {error.message}
                   </div>
                 )}
+                {persistenceError && (
+                  <div className="mb-4 rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
+                    {persistenceError}
+                  </div>
+                )}
                 <div className="min-h-[220px]">
-                  {!hasElements && !isStreaming ? (
+                  {isObjectView ? (
+                    activeObject ? (
+                      <ObjectView
+                        objectType={activeObject.type}
+                        objectId={activeObject.id}
+                        onBack={handleObjectBack}
+                      />
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Loading object view...
+                      </p>
+                    )
+                  ) : !hasElements && !isStreaming ? (
                     <p className="text-sm text-muted-foreground">
                       Enter a prompt to generate a widget.
                     </p>
@@ -979,7 +1352,7 @@ function DashboardContent() {
                     />
                   ) : null}
                 </div>
-                {hasElements && (
+                {hasElements && !isObjectView && (
                   <details className="mt-4">
                     <summary className="cursor-pointer text-sm text-muted-foreground">
                       View JSON
@@ -1097,8 +1470,13 @@ function DashboardContent() {
                   variant="outline"
                   className="w-full justify-start bg-transparent"
                   size="sm"
+                  onClick={handleShareLink}
                 >
-                  Share Link
+                  {shareStatus === "copied"
+                    ? "Link copied"
+                    : shareStatus === "error"
+                      ? "Copy failed"
+                      : "Share Link"}
                 </Button>
                 <Button
                   variant="outline"
@@ -1150,12 +1528,44 @@ function DashboardContent() {
   );
 }
 
-export default function DashboardPage() {
+export function DashboardPage() {
+  const router = useRouter();
+  const actionHandlers = useMemo(
+    () => ({
+      export_report: () => alert("Exporting report..."),
+      refresh_data: () => alert("Refreshing data..."),
+      view_details: (params?: Record<string, unknown>) => {
+        const target = resolveObjectTarget(params);
+        if (target) {
+          router.push(buildObjectRoute(target.type, target.id));
+          return;
+        }
+        alert(`Details: ${JSON.stringify(params ?? {})}`);
+      },
+      apply_filter: () => alert("Applying filters..."),
+      filter_accounts: (params?: Record<string, unknown>) => {
+        const status = typeof params?.status === "string" ? params.status : "all";
+        window.dispatchEvent(
+          new CustomEvent("accounts-filter", { detail: { status } }),
+        );
+      },
+      open_object: (params?: Record<string, unknown>) => {
+        const target = resolveObjectTarget(params);
+        if (!target) {
+          console.warn("open_object called without a valid target", params);
+          return;
+        }
+        router.push(buildObjectRoute(target.type, target.id));
+      },
+    }),
+    [router],
+  );
+
   return (
     <DataProvider initialData={INITIAL_DATA}>
       <ValidationProvider>
         <VisibilityProvider>
-          <ActionProvider handlers={ACTION_HANDLERS}>
+          <ActionProvider handlers={actionHandlers}>
             <DashboardContent />
           </ActionProvider>
         </VisibilityProvider>
@@ -1163,3 +1573,5 @@ export default function DashboardPage() {
     </DataProvider>
   );
 }
+
+export default DashboardPage;

@@ -31,7 +31,7 @@ export function Table({ element }: ComponentRenderProps) {
       {title && (
         <div className="mb-3 text-sm font-semibold text-foreground">{title}</div>
       )}
-      <div className="w-full overflow-auto rounded-xl border border-border/80 bg-card/80 shadow-sm">
+      <div className="w-full overflow-auto rounded-xl border border-border/80 bg-card/80">
         <table className="w-full min-w-[640px] border-collapse text-sm">
           <thead className="text-xs uppercase tracking-wide text-muted-foreground">
             <tr>

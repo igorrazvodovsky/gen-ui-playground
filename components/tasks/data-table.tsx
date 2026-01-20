@@ -45,6 +45,7 @@ export function DataTable<TData, TValue>({
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns,
@@ -76,7 +77,7 @@ export function DataTable<TData, TValue>({
     <div className="flex flex-col gap-3">
       <DataTableToolbar table={table} />
       <Table
-        containerClassName="w-full overflow-auto rounded-xl border border-border/80 bg-card/80 shadow-sm"
+        containerClassName="w-full overflow-auto rounded-xl border border-border/80 bg-card/80"
         className="min-w-[720px] border-collapse text-sm"
       >
         <TableHeader className="text-xs uppercase tracking-wide text-muted-foreground">

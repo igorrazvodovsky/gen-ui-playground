@@ -15,7 +15,7 @@ COMPONENT DETAILS:
 - Metric: { label: string, valuePath: string, format?: "number"|"currency"|"percent", trend?: "up"|"down"|"neutral", trendValue?: string }
 - Chart: { type: "bar"|"line"|"pie"|"area", dataPath: string, title?: string, height?: number }
 - Table: { title?: string, dataPath: string, columns: [{ key: string, label: string, format?: "text"|"currency"|"date"|"badge" }] }
-- DataTable: { title?: string, dataPath: string, columns: [{ key: string, label: string, format?: "text"|"currency"|"date"|"badge", sortable?: boolean }], enableSelection?: boolean, searchPath?: string, hideSearch?: boolean, initialSort?: { key: string, direction: "asc"|"desc" }, searchKey?: string, emptyMessage?: string, filterField?: string, filterEventName?: string }
+- DataTable: { title?: string, dataPath: string, columns: [{ key: string, label: string, format?: "text"|"currency"|"date"|"badge", sortable?: boolean, link?: boolean }], enableSelection?: boolean, searchPath?: string, hideSearch?: boolean, initialSort?: { key: string, direction: "asc"|"desc" }, searchKey?: string, emptyMessage?: string, filterField?: string, filterEventName?: string, linkBasePath?: string, linkIdKey?: string }
 - Button: { label: string, action: string, variant?: "primary"|"secondary"|"danger"|"ghost", size?: "sm"|"md"|"lg", disabled?: boolean }
 - Heading: { text: string, level?: "h1"|"h2"|"h3"|"h4" }
 - Text: { content: string, variant?: "body"|"caption"|"label", color?: "default"|"muted"|"success"|"warning"|"danger" }
@@ -33,6 +33,15 @@ COMPONENT DETAILS:
 DATA BINDING:
 - valuePath: "/analytics/revenue" (for single values like Metric, TextField, Select)
 - dataPath: "/analytics/salesByRegion" (for arrays like Chart, Table, List)
+
+ACTIONS:
+Use these action names for Button/Tabs/Empty components when needed:
+- export_report
+- refresh_data
+- view_details
+- apply_filter
+- filter_accounts
+- open_object
 
 OUTPUT FORMAT:
 Output JSONL where each line is a patch operation. Use a FLAT key-based structure:

@@ -94,11 +94,14 @@ export const dashboardCatalog = createCatalog({
               .enum(["text", "currency", "date", "badge"])
               .nullable(),
             sortable: z.boolean().nullable(),
+            link: z.boolean().nullable(),
           }),
         ),
         enableSelection: z.boolean().nullable(),
         searchPath: z.string().nullable(),
         hideSearch: z.boolean().nullable(),
+        linkBasePath: z.string().nullable(),
+        linkIdKey: z.string().nullable(),
         initialSort: z
           .object({
             key: z.string(),
@@ -266,6 +269,7 @@ export const dashboardCatalog = createCatalog({
     view_details: { description: "View detailed information" },
     apply_filter: { description: "Apply the current filter settings" },
     filter_accounts: { description: "Filter accounts table by status" },
+    open_object: { description: "Open an object detail view by type and id" },
   },
   validation: "strict",
 });

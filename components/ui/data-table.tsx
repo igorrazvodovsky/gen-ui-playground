@@ -12,6 +12,7 @@ import {
 import { getByPath } from "@json-render/core";
 import { type ComponentRenderProps } from "@json-render/react";
 import { useData } from "@json-render/react";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Checkbox } from "./checkbox";
 import { formatTableCell } from "@/lib/table-format";
@@ -31,9 +32,10 @@ type TableColumn = {
   label: string;
   format?: "text" | "currency" | "date" | "badge" | null;
   sortable?: boolean | null;
+  link?: boolean | null;
 };
 
-  type InitialSort = {
+type InitialSort = {
   key: string;
   direction: "asc" | "desc";
 };
@@ -51,6 +53,8 @@ export function DataTable({ element }: ComponentRenderProps) {
     filterField,
     filterEventName,
     hideSearch,
+    linkBasePath,
+    linkIdKey,
   } = element.props as {
     title?: string | null;
     dataPath: string;
@@ -63,6 +67,8 @@ export function DataTable({ element }: ComponentRenderProps) {
     filterField?: string | null;
     filterEventName?: string | null;
     hideSearch?: boolean | null;
+    linkBasePath?: string | null;
+    linkIdKey?: string | null;
   };
 
   const { data } = useData();
@@ -100,6 +106,8 @@ export function DataTable({ element }: ComponentRenderProps) {
 
   const columnDefs = useMemo<ColumnDef<Record<string, unknown>>[]>(() => {
     const defs: ColumnDef<Record<string, unknown>>[] = [];
+    const resolvedLinkBase = linkBasePath?.replace(/\/$/, "") ?? null;
+    const resolvedLinkIdKey = linkIdKey ?? "id";
 
     if (enableSelection) {
       defs.push({
@@ -160,16 +168,31 @@ export function DataTable({ element }: ComponentRenderProps) {
             </button>
           );
         },
-        cell: ({ getValue }) =>
-          formatTableCell(getValue(), col.format, {
+        cell: ({ getValue, row }) => {
+          const content = formatTableCell(getValue(), col.format, {
             currency: { maximumFractionDigits: 0 },
-          }),
+          });
+          if (!resolvedLinkBase || !col.link) return content;
+          const rawId = row.original?.[resolvedLinkIdKey];
+          if (rawId === null || rawId === undefined) return content;
+          const href = `${resolvedLinkBase}/${encodeURIComponent(
+            String(rawId),
+          )}`;
+          return (
+            <Link
+              href={href}
+              className="font-medium text-primary hover:underline"
+            >
+              {content}
+            </Link>
+          );
+        },
         enableSorting: !!col.sortable,
       });
     });
 
     return defs;
-  }, [columns, enableSelection]);
+  }, [columns, enableSelection, linkBasePath, linkIdKey]);
 
   const filteredRows = useMemo(() => {
     if (!filterField || !filterValue) return rows;
@@ -242,7 +265,7 @@ export function DataTable({ element }: ComponentRenderProps) {
         </div>
       )}
       <Table
-        containerClassName="w-full overflow-auto rounded-xl border border-border/80 bg-card/80 shadow-sm"
+        containerClassName="w-full overflow-auto rounded-xl border border-border/80 bg-card/80"
         className="min-w-[720px] border-collapse text-sm"
       >
         <TableHeader className="text-xs uppercase tracking-wide text-muted-foreground">

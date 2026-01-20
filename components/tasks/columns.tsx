@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { type ColumnDef } from "@tanstack/react-table";
 
 import { Checkbox } from "@/components/ui/checkbox";
@@ -39,7 +40,21 @@ export const columns: ColumnDef<Task>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Task" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("id")}</div>,
+    cell: ({ row }) => {
+      const rawId = row.getValue("id");
+      if (!rawId) {
+        return <div className="w-[80px]">-</div>;
+      }
+      const id = String(rawId);
+      const href = `/objects/tasks/${encodeURIComponent(id)}`;
+      return (
+        <div className="w-[80px]">
+          <Link href={href} className="font-medium text-primary hover:underline">
+            {id}
+          </Link>
+        </div>
+      );
+    },
     enableSorting: false,
     enableHiding: false,
   },

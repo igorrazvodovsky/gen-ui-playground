@@ -476,6 +476,7 @@ const accountsTree: UITree = {
         filterField: "status",
         filterEventName: "accounts-filter",
         hideSearch: true,
+        linkBasePath: "/objects/accounts",
         searchPath: "/form/accountsSearch",
         initialSort: {
           key: "arr",
@@ -484,7 +485,7 @@ const accountsTree: UITree = {
         searchKey: "name",
         emptyMessage: "No accounts found",
         columns: [
-          { key: "name", label: "Account", sortable: true },
+          { key: "name", label: "Account", sortable: true, link: true },
           { key: "owner", label: "Owner", sortable: true },
           { key: "segment", label: "Segment", sortable: true },
           { key: "status", label: "Status", format: "badge", sortable: true },

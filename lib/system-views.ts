@@ -484,6 +484,241 @@ const accountsTree: UITree = {
   },
 };
 
+const settingsTree: UITree = {
+  root: "system-settings",
+  elements: {
+    "system-settings": {
+      key: "system-settings",
+      type: "Stack",
+      props: {
+        direction: "vertical",
+        gap: "lg",
+      },
+      children: [
+        "settings-header",
+        "settings-profile",
+        "settings-preferences",
+        "settings-sessions",
+      ],
+    },
+    "settings-header": {
+      key: "settings-header",
+      type: "Stack",
+      props: {
+        direction: "vertical",
+        gap: "sm",
+      },
+    },
+    "settings-profile": {
+      key: "settings-profile",
+      type: "Card",
+      props: {
+        title: "Profile",
+        description: "Contact information shown to your team.",
+        padding: "lg",
+      },
+      children: ["settings-profile-stack"],
+    },
+    "settings-profile-stack": {
+      key: "settings-profile-stack",
+      type: "Stack",
+      props: {
+        direction: "vertical",
+        gap: "md",
+      },
+      children: [
+        "settings-name",
+        "settings-email",
+        "settings-role",
+        "settings-team",
+      ],
+    },
+    "settings-name": {
+      key: "settings-name",
+      type: "TextField",
+      props: {
+        label: "Full name",
+        valuePath: "/settings/profile/name",
+        placeholder: "Enter your name",
+      },
+    },
+    "settings-email": {
+      key: "settings-email",
+      type: "TextField",
+      props: {
+        label: "Email address",
+        valuePath: "/settings/profile/email",
+        placeholder: "name@company.com",
+        type: "email",
+      },
+    },
+    "settings-role": {
+      key: "settings-role",
+      type: "TextField",
+      props: {
+        label: "Role",
+        valuePath: "/settings/profile/title",
+        placeholder: "Role or title",
+      },
+    },
+    "settings-team": {
+      key: "settings-team",
+      type: "TextField",
+      props: {
+        label: "Team",
+        valuePath: "/settings/profile/team",
+        placeholder: "Team or department",
+      },
+    },
+    "settings-preferences": {
+      key: "settings-preferences",
+      type: "Card",
+      props: {
+        title: "Preferences",
+        description: "Defaults for new content and notifications.",
+        padding: "lg",
+      },
+      children: ["settings-preferences-stack"],
+    },
+    "settings-preferences-stack": {
+      key: "settings-preferences-stack",
+      type: "Stack",
+      props: {
+        direction: "vertical",
+        gap: "md",
+      },
+      children: [
+        "settings-timezone",
+        "settings-language",
+        "settings-date-format",
+        "settings-week-start",
+        "settings-digest",
+        "settings-quarter-start",
+      ],
+    },
+    "settings-timezone": {
+      key: "settings-timezone",
+      type: "Select",
+      props: {
+        label: "Time zone",
+        valuePath: "/settings/preferences/timezone",
+        placeholder: "Select time zone",
+        options: [
+          { value: "America/Los_Angeles", label: "Pacific Time (PT)" },
+          { value: "America/New_York", label: "Eastern Time (ET)" },
+          { value: "Europe/London", label: "Greenwich Mean Time (GMT)" },
+          { value: "Asia/Singapore", label: "Singapore Time (SGT)" },
+        ],
+      },
+    },
+    "settings-language": {
+      key: "settings-language",
+      type: "Select",
+      props: {
+        label: "Language",
+        valuePath: "/settings/preferences/language",
+        placeholder: "Select language",
+        options: [
+          { value: "en-US", label: "English (US)" },
+          { value: "en-GB", label: "English (UK)" },
+          { value: "de-DE", label: "German" },
+          { value: "fr-FR", label: "French" },
+        ],
+      },
+    },
+    "settings-date-format": {
+      key: "settings-date-format",
+      type: "Select",
+      props: {
+        label: "Date format",
+        valuePath: "/settings/preferences/dateFormat",
+        options: [
+          { value: "MMM d, yyyy", label: "Jan 6, 2025" },
+          { value: "yyyy-MM-dd", label: "2025-01-06" },
+          { value: "dd/MM/yyyy", label: "06/01/2025" },
+        ],
+      },
+    },
+    "settings-week-start": {
+      key: "settings-week-start",
+      type: "Select",
+      props: {
+        label: "Week starts on",
+        valuePath: "/settings/preferences/weekStart",
+        options: [
+          { value: "Monday", label: "Monday" },
+          { value: "Sunday", label: "Sunday" },
+        ],
+      },
+    },
+    "settings-digest": {
+      key: "settings-digest",
+      type: "Select",
+      props: {
+        label: "Digest frequency",
+        valuePath: "/settings/preferences/digest",
+        options: [
+          { value: "Daily", label: "Daily" },
+          { value: "Weekly", label: "Weekly" },
+          { value: "Monthly", label: "Monthly" },
+          { value: "Off", label: "Off" },
+        ],
+      },
+    },
+    "settings-quarter-start": {
+      key: "settings-quarter-start",
+      type: "DatePicker",
+      props: {
+        label: "Quarter start",
+        valuePath: "/settings/preferences/quarterStart",
+        placeholder: "Select date",
+      },
+    },
+    "settings-sessions": {
+      key: "settings-sessions",
+      type: "Card",
+      props: {
+        title: "Active sessions",
+        description: "Devices recently used to access this workspace.",
+        padding: "lg",
+      },
+      children: ["settings-sessions-stack"],
+    },
+    "settings-sessions-stack": {
+      key: "settings-sessions-stack",
+      type: "Stack",
+      props: {
+        direction: "vertical",
+        gap: "sm",
+      },
+      children: ["settings-sessions-note", "settings-sessions-table"],
+    },
+    "settings-sessions-note": {
+      key: "settings-sessions-note",
+      type: "Text",
+      props: {
+        content:
+          "If you see an unfamiliar device, sign out from the account menu.",
+        variant: "caption",
+        color: "muted",
+      },
+    },
+    "settings-sessions-table": {
+      key: "settings-sessions-table",
+      type: "Table",
+      props: {
+        dataPath: "/settings/sessions",
+        columns: [
+          { key: "device", label: "Device" },
+          { key: "location", label: "Location" },
+          { key: "lastActive", label: "Last active", format: "date" },
+          { key: "status", label: "Status", format: "badge" },
+        ],
+      },
+    },
+  },
+};
+
 export const SYSTEM_VIEWS: SystemView[] = [
   {
     id: "system-dashboard",
@@ -498,6 +733,13 @@ export const SYSTEM_VIEWS: SystemView[] = [
     prompt:
       "Accounts overview with tabs, search, and a sortable table for ARR, status, and renewals.",
     tree: accountsTree,
+  },
+  {
+    id: "system-settings",
+    label: "Settings",
+    prompt:
+      "Workspace settings with profile fields, preferences, and active sessions.",
+    tree: settingsTree,
   },
 ];
 

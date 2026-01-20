@@ -296,6 +296,42 @@ const INITIAL_DATA = {
       },
     ],
   },
+  settings: {
+    profile: {
+      name: "Alex Johnson",
+      email: "alex.johnson@acme.com",
+      title: "Product Lead",
+      team: "Growth",
+    },
+    preferences: {
+      timezone: "America/Los_Angeles",
+      language: "en-US",
+      dateFormat: "MMM d, yyyy",
+      weekStart: "Monday",
+      digest: "Weekly",
+      quarterStart: "2025-01-01",
+    },
+    sessions: [
+      {
+        device: "MacBook Pro 16\"",
+        location: "San Francisco, CA",
+        lastActive: "2025-02-06",
+        status: "Current",
+      },
+      {
+        device: "iPhone 15 Pro",
+        location: "San Jose, CA",
+        lastActive: "2025-02-04",
+        status: "Active",
+      },
+      {
+        device: "Chrome on Windows",
+        location: "New York, NY",
+        lastActive: "2025-01-29",
+        status: "Expired",
+      },
+    ],
+  },
 };
 
 const ACTION_HANDLERS = {
@@ -319,6 +355,12 @@ const PROMPT_SUGGESTIONS = [
   { label: "Recent transactions table", icon: FileText },
   { label: "Customer count with trend", icon: Users },
 ];
+
+const SYSTEM_VIEW_ICONS = {
+  "system-dashboard": LayoutDashboard,
+  "system-accounts": BriefcaseBusiness,
+  "system-settings": Settings,
+};
 
 function DashboardContent() {
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
@@ -648,22 +690,21 @@ function DashboardContent() {
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {systemViews.map((view) => (
-                    <SidebarMenuItem key={view.id}>
-                      <SidebarMenuButton
-                        tooltip={view.label}
-                        isActive={activeSystemViewId === view.id}
-                        onClick={() => handleSystemViewSelect(view)}
-                      >
-                        {(view.id === "system-accounts" ? (
-                          <BriefcaseBusiness />
-                        ) : (
-                          <LayoutDashboard />
-                        ))}
-                        <span>{view.label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                  {systemViews.map((view) => {
+                    const Icon = SYSTEM_VIEW_ICONS[view.id] ?? LayoutDashboard;
+                    return (
+                      <SidebarMenuItem key={view.id}>
+                        <SidebarMenuButton
+                          tooltip={view.label}
+                          isActive={activeSystemViewId === view.id}
+                          onClick={() => handleSystemViewSelect(view)}
+                        >
+                          <Icon />
+                          <span>{view.label}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
                 </SidebarMenu>
                 <SidebarMenu>
                   <SidebarMenuItem>
@@ -682,12 +723,6 @@ function DashboardContent() {
                     <SidebarMenuButton tooltip="Documents">
                       <FileText />
                       <span>Documents</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton tooltip="Settings">
-                      <Settings />
-                      <span>Settings</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>

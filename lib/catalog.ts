@@ -262,6 +262,13 @@ export const dashboardCatalog = createCatalog({
       }),
       description: "Tasks table with filters, columns, and row actions",
     },
+    ObjectView: {
+      props: z.object({
+        objectType: z.string(),
+        objectId: z.string(),
+      }),
+      description: "Detailed object view for a record by type and id",
+    },
   },
   actions: {
     export_report: { description: "Export the current dashboard to PDF" },

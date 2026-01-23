@@ -13,7 +13,6 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { getByPath, type UITree } from "@json-render/core";
 import { Button } from "@/components/ui/button";
-import { ObjectView } from "@/components/object-view";
 import {
   Sidebar,
   SidebarContent,
@@ -316,6 +315,18 @@ const INITIAL_DATA = {
         health: "Healthy",
         arr: 125000,
         renewalDate: "2025-06-15",
+        primaryPlant: "Dayton, OH",
+        productFocus: "Industrial fasteners",
+        certifications: "ISO 9001, ISO 14001",
+        leadTime: "6-8 weeks",
+        incoterms: "FOB Cleveland",
+        shippingMode: "LTL",
+        preferredCarrier: "FedEx Freight",
+        warehouseRegion: "Midwest DC",
+        paymentTerms: "Net 45",
+        minOrderValue: 25000,
+        contractTerm: "24 months",
+        forecastCadence: "Monthly",
       },
       {
         id: "globex",
@@ -326,6 +337,18 @@ const INITIAL_DATA = {
         health: "Watch",
         arr: 98000,
         renewalDate: "2025-05-02",
+        primaryPlant: "Monterrey, MX",
+        productFocus: "Precision machining",
+        certifications: "ISO 9001, IATF 16949",
+        leadTime: "8-10 weeks",
+        incoterms: "DAP Houston",
+        shippingMode: "Truckload",
+        preferredCarrier: "XPO Logistics",
+        warehouseRegion: "Gulf Coast",
+        paymentTerms: "Net 60",
+        minOrderValue: 40000,
+        contractTerm: "36 months",
+        forecastCadence: "Monthly",
       },
       {
         id: "umbrella-co",
@@ -336,6 +359,18 @@ const INITIAL_DATA = {
         health: "Healthy",
         arr: 47000,
         renewalDate: "2025-08-19",
+        primaryPlant: "Madison, WI",
+        productFocus: "Injection molded parts",
+        certifications: "ISO 9001",
+        leadTime: "5-7 weeks",
+        incoterms: "FOB Chicago",
+        shippingMode: "LTL",
+        preferredCarrier: "Old Dominion",
+        warehouseRegion: "Great Lakes",
+        paymentTerms: "Net 30",
+        minOrderValue: 15000,
+        contractTerm: "18 months",
+        forecastCadence: "Quarterly",
       },
       {
         id: "initech",
@@ -346,6 +381,18 @@ const INITIAL_DATA = {
         health: "Critical",
         arr: 32000,
         renewalDate: "2025-04-05",
+        primaryPlant: "Austin, TX",
+        productFocus: "Electromechanical assemblies",
+        certifications: "ISO 9001, IPC-A-610",
+        leadTime: "10-12 weeks",
+        incoterms: "DAP Dallas",
+        shippingMode: "Air + LTL",
+        preferredCarrier: "UPS Freight",
+        warehouseRegion: "South Central",
+        paymentTerms: "Net 60",
+        minOrderValue: 30000,
+        contractTerm: "12 months",
+        forecastCadence: "Monthly",
       },
       {
         id: "soylent",
@@ -356,6 +403,18 @@ const INITIAL_DATA = {
         health: "Healthy",
         arr: 156000,
         renewalDate: "2025-11-30",
+        primaryPlant: "Fresno, CA",
+        productFocus: "Food-grade processing equipment",
+        certifications: "ISO 22000, ISO 9001",
+        leadTime: "7-9 weeks",
+        incoterms: "FOB Oakland",
+        shippingMode: "Reefer truck",
+        preferredCarrier: "Ryder",
+        warehouseRegion: "West Coast",
+        paymentTerms: "Net 45",
+        minOrderValue: 35000,
+        contractTerm: "24 months",
+        forecastCadence: "Monthly",
       },
       {
         id: "stark-industries",
@@ -366,6 +425,18 @@ const INITIAL_DATA = {
         health: "Healthy",
         arr: 210000,
         renewalDate: "2025-09-12",
+        primaryPlant: "Pittsburgh, PA",
+        productFocus: "Advanced alloys",
+        certifications: "AS9100, ISO 9001",
+        leadTime: "12-14 weeks",
+        incoterms: "FOB Baltimore",
+        shippingMode: "Truckload",
+        preferredCarrier: "Schneider",
+        warehouseRegion: "Northeast",
+        paymentTerms: "Net 45",
+        minOrderValue: 75000,
+        contractTerm: "48 months",
+        forecastCadence: "Monthly",
       },
       {
         id: "wayne-enterprises",
@@ -376,6 +447,18 @@ const INITIAL_DATA = {
         health: "Watch",
         arr: 189000,
         renewalDate: "2025-07-03",
+        primaryPlant: "Detroit, MI",
+        productFocus: "Powertrain components",
+        certifications: "IATF 16949, ISO 14001",
+        leadTime: "9-11 weeks",
+        incoterms: "DAP Detroit",
+        shippingMode: "Rail + LTL",
+        preferredCarrier: "CSX Logistics",
+        warehouseRegion: "Midwest",
+        paymentTerms: "Net 60",
+        minOrderValue: 60000,
+        contractTerm: "36 months",
+        forecastCadence: "Monthly",
       },
       {
         id: "hooli",
@@ -386,6 +469,18 @@ const INITIAL_DATA = {
         health: "Healthy",
         arr: 54000,
         renewalDate: "2025-10-21",
+        primaryPlant: "Portland, OR",
+        productFocus: "Electronics assemblies",
+        certifications: "ISO 9001, ISO 27001",
+        leadTime: "6-8 weeks",
+        incoterms: "FOB Seattle",
+        shippingMode: "Parcel + LTL",
+        preferredCarrier: "DHL Supply Chain",
+        warehouseRegion: "Pacific Northwest",
+        paymentTerms: "Net 30",
+        minOrderValue: 20000,
+        contractTerm: "18 months",
+        forecastCadence: "Quarterly",
       },
     ],
   },
@@ -563,7 +658,7 @@ function DashboardContent() {
     [activeObject],
   );
   const activePrompt = activeView?.prompt ?? "";
-  const isObjectView = !!activeObject;
+  const isObjectView = routeSelection.kind === "object";
   const isPromptEditable = !isObjectView && !!activeView;
   const currentViewLabel = isObjectView
     ? `${activeObjectDefinition?.label ?? "Object"} · ${activeObject?.id ?? ""}`
@@ -621,7 +716,7 @@ function DashboardContent() {
   );
   const visibleRecentViews = useMemo(
     () => recentItems.filter((item) => !normalizeSystemViewId(item.id)),
-    [recentItems, systemViews, normalizeSystemViewId],
+    [recentItems, normalizeSystemViewId],
   );
   const recentEntries = useMemo(() => {
     const viewEntries = visibleRecentViews.map((item) => ({
@@ -663,8 +758,8 @@ function DashboardContent() {
   }, []);
 
   useEffect(() => {
+    const timers = recentUpdateTimersRef.current;
     return () => {
-      const timers = recentUpdateTimersRef.current;
       timers.forEach((timerId) => window.clearTimeout(timerId));
       timers.clear();
     };
@@ -952,14 +1047,6 @@ function DashboardContent() {
     navigateToView(view.id);
   }, [activeViewId, navigateToView, openCommandMenu]);
 
-  const handleObjectBack = useCallback(() => {
-    if (!activeObject) return;
-    const fallback =
-      DEFAULT_SYSTEM_VIEW?.id ? buildViewRoute(DEFAULT_SYSTEM_VIEW.id) : "/";
-    const targetRoute = activeObjectDefinition?.listRoute ?? fallback;
-    router.push(targetRoute);
-  }, [activeObject, activeObjectDefinition, router]);
-
   useEffect(() => {
     if (routeSelection.kind !== "root") return;
     setPersistenceError(null);
@@ -1149,10 +1236,27 @@ function DashboardContent() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [commandOpen, isEditableTarget, openCommandMenu]);
 
-  const displayTree = isObjectView ? null : activeTree ?? tree;
+  const objectTree = useMemo<UITree | null>(() => {
+    if (!activeObject) return null;
+    return {
+      root: "object-view",
+      elements: {
+        "object-view": {
+          key: "object-view",
+          type: "ObjectView",
+          props: {
+            objectType: activeObject.type,
+            objectId: activeObject.id,
+          },
+        },
+      },
+    };
+  }, [activeObject]);
+  const displayTree =
+    objectTree ?? (isObjectView ? null : activeTree ?? tree);
   const hasElements =
     !!displayTree && Object.keys(displayTree.elements).length > 0;
-  const isStreamingDisplay = isStreaming && !activeTree && !isObjectView;
+  const isStreamingDisplay = isStreaming && !activeTree && !objectTree;
   const showEmptyState =
     routeSelection.kind === "root" &&
     !hasElements &&
@@ -1514,7 +1618,7 @@ function DashboardContent() {
           </header>
 
           <main className="flex-1 p-3">
-            <div className="mx-auto max-w-6xl space-y-6">
+            <div className="mx-auto space-y-6">
 
               <div className="p-3">
                 {error && (
@@ -1528,18 +1632,10 @@ function DashboardContent() {
                   </div>
                 )}
                 <div className="min-h-[220px]">
-                  {isObjectView ? (
-                    activeObject ? (
-                      <ObjectView
-                        objectType={activeObject.type}
-                        objectId={activeObject.id}
-                        onBack={handleObjectBack}
-                      />
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
-                        Loading object view...
-                      </p>
-                    )
+                  {isObjectView && !objectTree ? (
+                    <p className="text-sm text-muted-foreground">
+                      Loading object view...
+                    </p>
                   ) : showEmptyState ? (
                     <p className="text-sm text-muted-foreground">
                       Enter a prompt to generate a widget.

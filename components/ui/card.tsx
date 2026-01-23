@@ -2,6 +2,8 @@
 
 import { type ComponentRenderProps } from "@json-render/react";
 
+import { cn } from "@/lib/utils";
+
 export function Card({ element, children }: ComponentRenderProps) {
   const { title, description, padding } = element.props as {
     title?: string | null;
@@ -9,47 +11,30 @@ export function Card({ element, children }: ComponentRenderProps) {
     padding?: string | null;
   };
 
-  const paddings: Record<string, string> = {
-    none: "0",
-    sm: "12px",
-    md: "16px",
-    lg: "24px",
+  const paddingClasses: Record<string, string> = {
+    none: "p-0",
+    sm: "p-3",
+    md: "p-4",
+    lg: "p-6",
   };
 
   return (
-    <div
-      style={{
-        background: "var(--card)",
-        border: "1px solid var(--border)",
-        borderRadius: "var(--radius)",
-      }}
-    >
+    <div className="rounded-md border border-border bg-card text-card-foreground">
       {(title || description) && (
-        <div
-          style={{
-            padding: "16px 20px",
-            borderBottom: "1px solid var(--border)",
-          }}
-        >
+        <div className="border-b border-border px-5 py-4">
           {title && (
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
-              {title}
-            </h3>
+            <h3 className="text-base font-semibold text-foreground">{title}</h3>
           )}
           {description && (
-            <p
-              style={{
-                margin: "4px 0 0",
-                fontSize: 14,
-                color: "var(--muted-foreground)",
-              }}
-            >
-              {description}
-            </p>
+            <p className="mt-1 text-sm text-muted-foreground">{description}</p>
           )}
         </div>
       )}
-      <div style={{ padding: paddings[padding || ""] || "16px" }}>
+      <div
+        className={cn(
+          paddingClasses[padding || ""] ?? paddingClasses.md,
+        )}
+      >
         {children}
       </div>
     </div>

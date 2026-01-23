@@ -5,6 +5,9 @@ import { useData, useFieldValidation } from "@json-render/react";
 import { getByPath } from "@json-render/core";
 import { useMemo } from "react";
 
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+
 export function TextField({ element }: ComponentRenderProps) {
   const { label, valuePath, placeholder, type, checks, validateOn } =
     element.props as {
@@ -36,11 +39,14 @@ export function TextField({ element }: ComponentRenderProps) {
     valuePath,
     validationConfig,
   );
+  const hasErrors = errors.length > 0;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      {label && <label style={{ fontSize: 14, fontWeight: 500 }}>{label}</label>}
-      <input
+    <div className="flex flex-col gap-1.5">
+      {label && (
+        <label className="text-sm font-medium text-foreground">{label}</label>
+      )}
+      <Input
         type={type || "text"}
         value={value ?? ""}
         onChange={(e) => {
@@ -52,19 +58,14 @@ export function TextField({ element }: ComponentRenderProps) {
           if (validateOn === "blur" || !validateOn) validate();
         }}
         placeholder={placeholder ?? ""}
-        style={{
-          padding: "8px 12px",
-          borderRadius: "var(--radius)",
-          border:
-            errors.length > 0 ? "1px solid #ef4444" : "1px solid var(--border)",
-          background: "var(--card)",
-          color: "var(--foreground)",
-          fontSize: 14,
-          outline: "none",
-        }}
+        aria-invalid={hasErrors}
+        className={cn(
+          hasErrors &&
+            "border-destructive focus-visible:ring-destructive/20",
+        )}
       />
       {errors.map((error, i) => (
-        <span key={i} style={{ fontSize: 12, color: "#ef4444" }}>
+        <span key={i} className="text-xs text-destructive">
           {error}
         </span>
       ))}

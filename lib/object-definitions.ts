@@ -6,6 +6,11 @@ export type ObjectField = {
   format?: ObjectFieldFormat;
 };
 
+export type ObjectPanel = {
+  title: string;
+  fields: ObjectField[];
+};
+
 export type ObjectDefinition = {
   type: string;
   label: string;
@@ -18,6 +23,7 @@ export type ObjectDefinition = {
   badges?: ObjectField[];
   summary?: ObjectField[];
   details?: ObjectField[];
+  panels?: ObjectPanel[];
 };
 
 export const OBJECT_DEFINITIONS: Record<string, ObjectDefinition> = {
@@ -40,6 +46,35 @@ export const OBJECT_DEFINITIONS: Record<string, ObjectDefinition> = {
       { key: "renewalDate", label: "Renewal", format: "date" },
     ],
     details: [{ key: "id", label: "Account ID" }],
+    panels: [
+      {
+        title: "Manufacturing Profile",
+        fields: [
+          { key: "primaryPlant", label: "Primary Plant" },
+          { key: "productFocus", label: "Product Focus" },
+          { key: "certifications", label: "Certifications" },
+          { key: "leadTime", label: "Lead Time" },
+        ],
+      },
+      {
+        title: "Supply & Logistics",
+        fields: [
+          { key: "incoterms", label: "Incoterms" },
+          { key: "shippingMode", label: "Shipping Mode" },
+          { key: "preferredCarrier", label: "Preferred Carrier" },
+          { key: "warehouseRegion", label: "Warehouse Region" },
+        ],
+      },
+      {
+        title: "Commercial Terms",
+        fields: [
+          { key: "paymentTerms", label: "Payment Terms" },
+          { key: "minOrderValue", label: "Min Order Value", format: "currency" },
+          { key: "contractTerm", label: "Contract Term" },
+          { key: "forecastCadence", label: "Forecast Cadence" },
+        ],
+      },
+    ],
   },
   tasks: {
     type: "tasks",

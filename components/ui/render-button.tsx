@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
 import { type ComponentRenderProps } from "@json-render/react";
+
+import { Button } from "@/components/ui/button";
 
 export function RenderButton({
   element,
@@ -16,50 +17,32 @@ export function RenderButton({
     disabled?: boolean | null;
   };
 
-  const variants: Record<string, React.CSSProperties> = {
-    primary: {
-      background: "var(--foreground)",
-      color: "var(--background)",
-      border: "none",
-    },
-    secondary: {
-      background: "transparent",
-      color: "var(--foreground)",
-      border: "1px solid var(--border)",
-    },
-    outline: {
-      background: "transparent",
-      color: "var(--foreground)",
-      border: "1px solid var(--border)",
-    },
-    danger: { background: "#dc2626", color: "#fff", border: "none" },
-    ghost: {
-      background: "transparent",
-      color: "var(--muted-foreground)",
-      border: "none",
-    },
+  const variantMap: Record<string, "default" | "secondary" | "outline" | "ghost" | "destructive"> = {
+    primary: "default",
+    secondary: "secondary",
+    outline: "outline",
+    danger: "destructive",
+    ghost: "ghost",
   };
-  const sizes: Record<string, React.CSSProperties> = {
-    sm: { padding: "6px 12px", fontSize: 12 },
-    md: { padding: "8px 16px", fontSize: 14 },
-    lg: { padding: "10px 20px", fontSize: 16 },
+  const sizeMap: Record<string, "sm" | "default" | "lg"> = {
+    sm: "sm",
+    md: "default",
+    lg: "lg",
   };
+  const resolvedVariant = variantMap[variant || "primary"] ?? "default";
+  const resolvedSize = sizeMap[size || "md"] ?? "default";
   const resolvedAction =
     typeof action === "string" ? { name: action } : action;
 
   return (
-    <button
+    <Button
+      type="button"
+      variant={resolvedVariant}
+      size={resolvedSize}
       onClick={() => !disabled && resolvedAction && onAction?.(resolvedAction)}
       disabled={!!disabled || loading}
-      style={{
-        borderRadius: "var(--radius)",
-        fontWeight: 500,
-        opacity: disabled ? 0.5 : 1,
-        ...sizes[size || "md"],
-        ...variants[variant || "primary"],
-      }}
     >
       {loading ? "Loading..." : label}
-    </button>
+    </Button>
   );
 }

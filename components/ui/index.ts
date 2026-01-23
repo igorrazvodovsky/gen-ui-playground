@@ -44,6 +44,7 @@ export { Heading } from "./heading";
 export { Input } from "./input";
 export { List } from "./list";
 export { Metric } from "./metric";
+export { ObjectView } from "./object-view";
 export {
   Popover,
   PopoverAnchor,
@@ -51,6 +52,7 @@ export {
   PopoverTrigger,
 } from "./popover";
 export { RenderButton } from "./render-button";
+export { Separator } from "./separator";
 export { Select } from "./select";
 export { Checkbox } from "./checkbox";
 export {
@@ -122,6 +124,7 @@ import { Grid } from "./grid";
 import { Heading } from "./heading";
 import { List } from "./list";
 import { Metric } from "./metric";
+import { ObjectView } from "./object-view";
 import { RenderButton } from "./render-button";
 import { Select } from "./select";
 import { Stack } from "./stack";
@@ -146,6 +149,7 @@ export const componentRegistry = {
   Heading,
   List,
   Metric,
+  ObjectView,
   Select,
   Stack,
   Table,

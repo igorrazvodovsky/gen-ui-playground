@@ -1,8 +1,10 @@
 "use client";
 
-import { type ComponentRenderProps } from "@json-render/react";
-import { useData } from "@json-render/react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { type ComponentRenderProps, useData } from "@json-render/react";
 import { getByPath } from "@json-render/core";
+
+import { cn } from "@/lib/utils";
 
 function useResolvedValue<T>(
   value: T | { path: string } | null | undefined,
@@ -15,6 +17,36 @@ function useResolvedValue<T>(
   return value as T;
 }
 
+const badgeVariants = cva(
+  "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium",
+  {
+    variants: {
+      variant: {
+        default: "bg-muted/70 text-foreground border-transparent",
+        success: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+        warning: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+        danger: "bg-red-500/10 text-red-600 border-red-500/20",
+        error: "bg-red-500/10 text-red-600 border-red-500/20",
+        info: "bg-slate-500/10 text-muted-foreground border-slate-500/20",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  },
+);
+
+function BadgeBase({
+  className,
+  variant,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement> &
+  VariantProps<typeof badgeVariants>) {
+  return (
+    <span className={cn(badgeVariants({ variant }), className)} {...props} />
+  );
+}
+
 export function Badge({ element }: ComponentRenderProps) {
   const { text, variant } = element.props as {
     text: string | { path: string };
@@ -22,28 +54,7 @@ export function Badge({ element }: ComponentRenderProps) {
   };
   const resolvedText = useResolvedValue(text);
 
-  const colors: Record<string, string> = {
-    default: "var(--foreground)",
-    success: "#22c55e",
-    warning: "#eab308",
-    danger: "#ef4444",
-    error: "#ef4444",
-    info: "var(--muted-foreground)",
-  };
-
-  return (
-    <span
-      style={{
-        display: "inline-block",
-        padding: "2px 8px",
-        borderRadius: 12,
-        fontSize: 12,
-        fontWeight: 500,
-        background: "var(--border)",
-        color: colors[variant || "default"],
-      }}
-    >
-      {resolvedText}
-    </span>
-  );
+  return <BadgeBase variant={variant ?? undefined}>{resolvedText}</BadgeBase>;
 }
+
+export { BadgeBase, badgeVariants };

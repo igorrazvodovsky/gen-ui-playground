@@ -14,11 +14,11 @@ export function List({ element, children }: ComponentRenderProps) {
 
   if (!listData || !Array.isArray(listData)) {
     return (
-      <div style={{ color: "var(--muted-foreground)" }}>
+      <p className="text-sm text-muted-foreground">
         {emptyMessage ?? "No items"}
-      </div>
+      </p>
     );
   }
 
-  return <div>{children}</div>;
+  return <div className="space-y-2">{children}</div>;
 }

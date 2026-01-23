@@ -24,7 +24,7 @@ export function formatTableCell(
   }
   if (format === "badge") {
     return (
-      <span className="inline-flex items-center rounded-full bg-muted/70 px-2.5 py-1 text-xs font-medium text-foreground">
+      <span className="inline-flex items-center rounded-full border border-transparent bg-muted/70 px-2.5 py-1 text-xs font-medium text-foreground">
         {String(value)}
       </span>
     );

@@ -94,7 +94,7 @@ export function Chart({ element }: ComponentRenderProps) {
 
   if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
     return (
-      <div style={{ padding: 20, color: "var(--muted-foreground)" }}>
+      <div className="rounded-md border border-dashed border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
         No data
       </div>
     );
@@ -110,7 +110,7 @@ export function Chart({ element }: ComponentRenderProps) {
 
   if (chartType === "bar") {
     chartBody = (
-      <div style={{ height: chartHeight }}>
+      <div className="w-full" style={{ height: chartHeight }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} margin={{ left: 0, right: 0 }}>
             <CartesianGrid
@@ -138,7 +138,7 @@ export function Chart({ element }: ComponentRenderProps) {
     );
   } else if (chartType === "line") {
     chartBody = (
-      <div style={{ height: chartHeight }}>
+      <div className="w-full" style={{ height: chartHeight }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ left: 0, right: 0 }}>
             <CartesianGrid
@@ -168,7 +168,7 @@ export function Chart({ element }: ComponentRenderProps) {
     );
   } else if (chartType === "area") {
     chartBody = (
-      <div style={{ height: chartHeight }}>
+      <div className="w-full" style={{ height: chartHeight }}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ left: 0, right: 0 }}>
             <CartesianGrid
@@ -201,7 +201,7 @@ export function Chart({ element }: ComponentRenderProps) {
     const innerRadius = Math.floor(outerRadius * 0.55);
 
     chartBody = (
-      <div style={{ height: chartHeight }}>
+      <div className="w-full" style={{ height: chartHeight }}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Tooltip content={<ChartTooltipContent />} />
@@ -229,9 +229,7 @@ export function Chart({ element }: ComponentRenderProps) {
   return (
     <div>
       {title && (
-        <h4 style={{ margin: "0 0 16px", fontSize: 14, fontWeight: 600 }}>
-          {title}
-        </h4>
+        <h4 className="mb-4 text-sm font-semibold text-foreground">{title}</h4>
       )}
       {chartBody}
     </div>

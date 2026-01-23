@@ -29,6 +29,7 @@ COMPONENT DETAILS:
 - Divider: { label?: string }
 - Empty: { title: string, description?: string, action?: string, actionLabel?: string }
 - TasksTable: { dataPath?: string } - Tasks table (defaults to /tasks/items)
+- ObjectView: { objectType: string, objectId: string } - Object detail view (system-managed)
 
 DATA BINDING:
 - valuePath: "/analytics/revenue" (for single values like Metric, TextField, Select)

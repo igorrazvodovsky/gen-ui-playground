@@ -2,18 +2,10 @@
 
 import { useMemo } from "react";
 import { getByPath } from "@json-render/core";
-import { useData } from "@json-render/react";
-import { Button } from "@/components/ui/button";
+import { type ComponentRenderProps, useData } from "@json-render/react";
+
 import { formatTableCell } from "@/lib/table-format";
 import { getObjectDefinition, type ObjectField } from "@/lib/object-definitions";
-
-const EMPTY_LABEL = "-";
-
-type ObjectViewProps = {
-  objectType: string;
-  objectId: string;
-  onBack?: () => void;
-};
 
 type ObjectRecord = Record<string, unknown>;
 
@@ -29,7 +21,7 @@ function FieldList({
   if (!fields.length) return null;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5">
+    <div className="rounded-md border border-border bg-card p-5">
       <h2 className="text-sm font-semibold text-foreground">{title}</h2>
       <dl className="mt-4 space-y-3">
         {fields.map((field) => (
@@ -48,7 +40,11 @@ function FieldList({
   );
 }
 
-export function ObjectView({ objectType, objectId, onBack }: ObjectViewProps) {
+export function ObjectView({ element }: ComponentRenderProps) {
+  const { objectType, objectId } = element.props as {
+    objectType: string;
+    objectId: string;
+  };
   const definition = getObjectDefinition(objectType);
   const { data } = useData();
 
@@ -73,16 +69,6 @@ export function ObjectView({ objectType, objectId, onBack }: ObjectViewProps) {
         <p className="mt-2 text-sm text-muted-foreground">
           We couldn&apos;t find a view for &quot;{objectType}&quot;.
         </p>
-        {onBack && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-4"
-            onClick={onBack}
-          >
-            Back to dashboard
-          </Button>
-        )}
       </div>
     );
   }
@@ -96,16 +82,6 @@ export function ObjectView({ objectType, objectId, onBack }: ObjectViewProps) {
         <p className="mt-2 text-sm text-muted-foreground">
           We couldn&apos;t find {definition.label.toLowerCase()} &quot;{objectId}&quot;.
         </p>
-        {onBack && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-4"
-            onClick={onBack}
-          >
-            Back to {definition.pluralLabel}
-          </Button>
-        )}
       </div>
     );
   }
@@ -113,10 +89,11 @@ export function ObjectView({ objectType, objectId, onBack }: ObjectViewProps) {
   const title =
     (item[definition.titleKey] ? String(item[definition.titleKey]) : null) ??
     objectId;
-  const metaFields = definition.meta ?? [];
-  const badges = definition.badges ?? [];
   const summary = definition.summary ?? [];
   const details = definition.details ?? [];
+  const panels = (definition.panels ?? []).filter(
+    (panel) => panel.fields.length > 0,
+  );
 
   return (
     <div className="space-y-6">
@@ -128,30 +105,6 @@ export function ObjectView({ objectType, objectId, onBack }: ObjectViewProps) {
           <h1 className="mt-2 text-2xl font-semibold text-foreground">
             {title}
           </h1>
-          {metaFields.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
-              {metaFields.map((field) => (
-                <div key={field.key} className="flex items-center gap-1.5">
-                  <span>{field.label}:</span>
-                  <span className="font-medium text-foreground">
-                    {formatTableCell(item[field.key], field.format) ?? EMPTY_LABEL}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {badges.map((field) => (
-            <div key={field.key} className="text-sm">
-              {formatTableCell(item[field.key], field.format) ?? EMPTY_LABEL}
-            </div>
-          ))}
-          {onBack && (
-            <Button variant="outline" size="sm" onClick={onBack}>
-              Back to {definition.pluralLabel}
-            </Button>
-          )}
         </div>
       </div>
 
@@ -159,6 +112,18 @@ export function ObjectView({ objectType, objectId, onBack }: ObjectViewProps) {
         <FieldList title="Overview" fields={summary} item={item} />
         <FieldList title="Details" fields={details} item={item} />
       </div>
+      {panels.length > 0 && (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {panels.map((panel) => (
+            <FieldList
+              key={panel.title}
+              title={panel.title}
+              fields={panel.fields}
+              item={item}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

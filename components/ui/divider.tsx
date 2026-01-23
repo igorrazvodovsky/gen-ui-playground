@@ -2,22 +2,12 @@
 
 import { type ComponentRenderProps } from "@json-render/react";
 
+import { Separator } from "@/components/ui/separator";
+
 export function Divider({ element }: ComponentRenderProps) {
   const { orientation } = element.props as { orientation?: string | null };
   if (orientation === "vertical") {
-    return (
-      <div
-        style={{ width: 1, background: "var(--border)", alignSelf: "stretch" }}
-      />
-    );
+    return <Separator orientation="vertical" className="self-stretch" />;
   }
-  return (
-    <hr
-      style={{
-        border: "none",
-        borderTop: "1px solid var(--border)",
-        margin: "16px 0",
-      }}
-    />
-  );
+  return <Separator className="my-4" />;
 }

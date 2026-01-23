@@ -3,7 +3,11 @@
 import { type ComponentRenderProps } from "@json-render/react";
 import { useData } from "@json-render/react";
 import { getByPath } from "@json-render/core";
+import { X } from "lucide-react";
 import { useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 function useResolvedValue<T>(
   value: T | { path: string } | null | undefined,
@@ -15,6 +19,13 @@ function useResolvedValue<T>(
   }
   return value as T;
 }
+
+const toneClasses: Record<string, string> = {
+  info: "border-border bg-card text-foreground",
+  success: "border-emerald-500/30 bg-emerald-500/5 text-emerald-700",
+  warning: "border-amber-500/30 bg-amber-500/5 text-amber-700",
+  error: "border-red-500/30 bg-red-500/5 text-red-700",
+};
 
 export function Alert({ element }: ComponentRenderProps) {
   const { type, title, message, dismissible } = element.props as {
@@ -29,49 +40,32 @@ export function Alert({ element }: ComponentRenderProps) {
 
   if (!visible) return null;
 
-  const colors: Record<string, string> = {
-    info: "var(--muted-foreground)",
-    success: "#22c55e",
-    warning: "#eab308",
-    error: "#ef4444",
-  };
-
   return (
     <div
-      style={{
-        padding: "12px 16px",
-        borderRadius: "var(--radius)",
-        background: "var(--card)",
-        border: "1px solid var(--border)",
-        fontSize: 14,
-        color: colors[type || "info"],
-        display: "flex",
-        gap: 12,
-        alignItems: "flex-start",
-      }}
+      className={cn(
+        "flex items-start gap-3 rounded-lg border px-4 py-3 text-sm",
+        toneClasses[type || "info"],
+      )}
     >
-      <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: 600, marginBottom: 4 }}>{title}</div>
+      <div className="flex-1">
+        <div className="font-semibold text-foreground">{title}</div>
         {resolvedMessage && (
-          <div style={{ color: "var(--muted-foreground)" }}>{resolvedMessage}</div>
+          <div className="mt-1 text-sm text-muted-foreground">
+            {resolvedMessage}
+          </div>
         )}
       </div>
       {dismissible && (
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          className="h-7 w-7"
+          size="icon"
           onClick={() => setVisible(false)}
-          style={{
-            border: "none",
-            background: "transparent",
-            color: "var(--muted-foreground)",
-            cursor: "pointer",
-            fontSize: 14,
-            lineHeight: 1,
-          }}
           aria-label="Dismiss"
         >
-          ×
-        </button>
+          <X className="h-4 w-4" />
+        </Button>
       )}
     </div>
   );

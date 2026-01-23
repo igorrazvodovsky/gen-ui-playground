@@ -2,6 +2,8 @@
 
 import { type ComponentRenderProps } from "@json-render/react";
 
+import { Button } from "@/components/ui/button";
+
 export function Empty({ element, onAction }: ComponentRenderProps) {
   const { title, description, action, actionLabel } = element.props as {
     title: string;
@@ -11,31 +13,19 @@ export function Empty({ element, onAction }: ComponentRenderProps) {
   };
 
   return (
-    <div style={{ textAlign: "center", padding: "40px 20px" }}>
-      <h3 style={{ margin: "0 0 8px", fontSize: 16, fontWeight: 600 }}>
-        {title}
-      </h3>
+    <div className="flex flex-col items-center gap-3 py-10 text-center">
+      <h3 className="text-base font-semibold text-foreground">{title}</h3>
       {description && (
-        <p style={{ margin: 0, fontSize: 14, color: "var(--muted-foreground)" }}>
-          {description}
-        </p>
+        <p className="text-sm text-muted-foreground">{description}</p>
       )}
       {action && (
-        <button
+        <Button
           type="button"
+          variant="outline"
           onClick={() => onAction?.({ name: action })}
-          style={{
-            marginTop: 12,
-            padding: "8px 12px",
-            borderRadius: "var(--radius)",
-            border: "1px solid var(--border)",
-            background: "transparent",
-            color: "var(--foreground)",
-            cursor: "pointer",
-          }}
         >
           {actionLabel ?? "Take action"}
-        </button>
+        </Button>
       )}
     </div>
   );

@@ -4,6 +4,14 @@ import { type ComponentRenderProps } from "@json-render/react";
 import { useData } from "@json-render/react";
 import { getByPath } from "@json-render/core";
 
+import { cn } from "@/lib/utils";
+
+const trendClasses: Record<string, string> = {
+  up: "text-emerald-600",
+  down: "text-red-600",
+  neutral: "text-muted-foreground",
+};
+
 export function Metric({ element }: ComponentRenderProps) {
   const { label, valuePath, format, trend, trendValue } = element.props as {
     label: string;
@@ -32,22 +40,17 @@ export function Metric({ element }: ComponentRenderProps) {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      <span style={{ fontSize: 14, color: "var(--muted-foreground)" }}>
-        {label}
+    <div className="flex flex-col gap-1.5">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-3xl font-semibold text-foreground">
+        {displayValue}
       </span>
-      <span style={{ fontSize: 32, fontWeight: 600 }}>{displayValue}</span>
       {(trend || trendValue) && (
         <span
-          style={{
-            fontSize: 14,
-            color:
-              trend === "up"
-                ? "#22c55e"
-                : trend === "down"
-                  ? "#ef4444"
-                  : "var(--muted-foreground)",
-          }}
+          className={cn(
+            "text-sm",
+            trendClasses[trend || "neutral"] ?? trendClasses.neutral,
+          )}
         >
           {trend === "up" ? "+" : trend === "down" ? "-" : ""}
           {trendValue}

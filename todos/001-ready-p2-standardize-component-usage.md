@@ -65,7 +65,7 @@ Proceed with Option 1. Keep everything in `components/ui`, retrofit renderer com
 ## Technical Details
 
 **Affected files:**
-- `components/dashboard-page.tsx` - main layout and widget rendering
+- `components/page/index.tsx` - main layout and widget rendering
 - `components/object-view.tsx` - migrate to json-render
 - `components/ui/tasks-table.tsx` - migrate to json-render usage
 - `components/tasks/*` - keep task-specific tables but reuse primitives
@@ -82,7 +82,7 @@ Proceed with Option 1. Keep everything in `components/ui`, retrofit renderer com
 
 ## Acceptance Criteria
 
-- [ ] App-level UI surfaces (`components/dashboard-page.tsx`, `components/object-view.tsx`, `components/tasks/*`) use shared primitives where feasible.
+- [ ] App-level UI surfaces (`components/page/index.tsx`, `components/object-view.tsx`, `components/tasks/*`) use shared primitives where feasible.
 - [ ] Components used in `<main>` default to json-render components unless clearly unique or not intended for generation.
 - [ ] Renderer components use shadcn styling instead of inline styles.
 - [ ] `components/ui/index.ts`, `lib/catalog.ts`, and `app/api/generate/route.ts` remain aligned.

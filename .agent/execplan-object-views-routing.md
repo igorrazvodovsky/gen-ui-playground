@@ -4,13 +4,13 @@ This ExecPlan is a living document. The sections `Progress`, `Surprises & Discov
 
 ## Purpose / Big Picture
 
-After this change, the dashboard supports deep links and back/forward navigation for both generated views and object detail views (accounts, tasks, and future objects). Generated views are persisted so a shared URL reliably restores the same UI tree, and object views can be visited via stable routes like `/objects/accounts/<id>`. A user should be able to refresh the page or send a link to someone else and see the same generated layout or object details.
+After this change, the page supports deep links and back/forward navigation for both generated views and object detail views (accounts, tasks, and future objects). Generated views are persisted so a shared URL reliably restores the same UI tree, and object views can be visited via stable routes like `/objects/accounts/<id>`. A user should be able to refresh the page or send a link to someone else and see the same generated layout or object details.
 
 ## Progress
 
 - [x] (2026-01-20 14:26Z) Drafted ExecPlan with routing, persistence, and object view scope.
 - [x] (2026-01-20 14:44Z) Implemented the view persistence store and API routes.
-- [x] (2026-01-20 14:44Z) Refactored the dashboard page into a reusable client component and added a catch-all page route.
+- [x] (2026-01-20 14:44Z) Refactored the page into a reusable client component and added a catch-all page route.
 - [x] (2026-01-20 14:44Z) Added object view rendering with type definitions and linkable list entries.
 - [x] (2026-01-20 14:44Z) Wired routing state to system views, generated views, and object views.
 - [x] (2026-01-20 14:44Z) Updated catalog/schema/prompt for new DataTable link props and actions.
@@ -23,7 +23,7 @@ After this change, the dashboard supports deep links and back/forward navigation
 ## Surprises & Discoveries
 
 - Observation: The project enforces `react-hooks/set-state-in-effect`, which flags route-synchronization effects that set state synchronously.
-  Evidence: `npm run lint` reported errors in `components/dashboard-page.tsx` before adding a scoped eslint disable.
+  Evidence: `npm run lint` reported errors in `components/page/index.tsx` before adding a scoped eslint disable.
 - Observation: Radix dropdown trigger IDs can mismatch during hydration without stable IDs on the trigger element.
   Evidence: Next.js hydration warnings referenced `SidebarMenuButton` inside dropdown triggers.
 - Observation: Generated view routes can refetch in a loop when the refresh updates recent state within the same effect.
@@ -44,7 +44,7 @@ After this change, the dashboard supports deep links and back/forward navigation
   Rationale: The lint rule disallows synchronous setState in effects; the disable is localized to the routing sync effects to keep behavior intact.
   Date/Author: 2026-01-20 / Assistant
 
-- Decision: Consolidate routes into `app/[[...slug]]/page.tsx` to keep the dashboard client component mounted across deep links.
+- Decision: Consolidate routes into `app/[[...slug]]/page.tsx` to keep the page client component mounted across deep links.
   Rationale: Separate page components remount client state on navigation, which breaks immediate access to newly generated views and recent state.
   Date/Author: 2026-01-20 / Assistant
 
@@ -54,18 +54,18 @@ After this change, the dashboard supports deep links and back/forward navigation
 
 ## Context and Orientation
 
-The dashboard currently lives in `app/page.tsx` as a client component that holds state for system views (`lib/system-views.ts`), recent generated views, and the json-render stream. The json-render catalog and component guardrails are defined in `lib/catalog.ts`, while the generator prompt is in `app/api/generate/route.ts`. The accounts system view uses the json-render `DataTable` (`components/ui/data-table.tsx`) and the tasks system view uses a dedicated table with custom columns in `components/tasks/columns.tsx`. There is no persistent storage for generated views and no object detail page today.
+The page currently lives in `app/page.tsx` as a client component that holds state for system views (`lib/system-views.ts`), recent generated views, and the json-render stream. The json-render catalog and component guardrails are defined in `lib/catalog.ts`, while the generator prompt is in `app/api/generate/route.ts`. The accounts system view uses the json-render `DataTable` (`components/ui/data-table.tsx`) and the tasks system view uses a dedicated table with custom columns in `components/tasks/columns.tsx`. There is no persistent storage for generated views and no object detail page today.
 
 ## Plan of Work
 
-First, introduce a small persistence layer in `lib/view-store.ts` backed by SQLite and expose it through new API routes in `app/api/views/route.ts` and `app/api/views/[id]/route.ts`. Next, refactor the dashboard UI into `components/dashboard-page.tsx` so a new optional catch-all page can render the same client component and parse path-based routing. Then add object view rendering via `components/object-view.tsx` and `lib/object-definitions.ts`, and update the accounts/tasks tables to link into `/objects/...`. Finally, wire routing to update active views, persist generated views after streaming, and update catalog/prompt definitions for new DataTable link props and actions.
+First, introduce a small persistence layer in `lib/view-store.ts` backed by SQLite and expose it through new API routes in `app/api/views/route.ts` and `app/api/views/[id]/route.ts`. Next, refactor the page UI into `components/page/index.tsx` so a new optional catch-all page can render the same client component and parse path-based routing. Then add object view rendering via `components/object-view.tsx` and `lib/object-definitions.ts`, and update the accounts/tasks tables to link into `/objects/...`. Finally, wire routing to update active views, persist generated views after streaming, and update catalog/prompt definitions for new DataTable link props and actions.
 
 ## Concrete Steps
 
 - Working dir: `/Users/igors.razvodovskis/Development/genUI-test-dashboard`.
 - Add `lib/view-store.ts` with file-backed helpers to create, update, and fetch generated views.
 - Add API routes in `app/api/views/route.ts` (POST) and `app/api/views/[id]/route.ts` (GET/PUT).
-- Move the dashboard client logic into `components/dashboard-page.tsx` and make `app/[[...slug]]/page.tsx` a thin wrapper that renders it.
+- Move the page client logic into `components/page/index.tsx` and make `app/[[...slug]]/page.tsx` a thin wrapper that renders it.
 - Create `lib/object-definitions.ts` describing accounts/tasks object metadata and fields.
 - Create `components/object-view.tsx` to render object details from shared data.
 - Update `components/ui/data-table.tsx` and `lib/catalog.ts` to support linkable columns and a base object route.

@@ -1,5 +1,5 @@
-import { DashboardPage } from "@/components/dashboard-page";
+import { Page } from "@/components/page";
 
 export default function CatchAllPage() {
-  return <DashboardPage />;
+  return <Page />;
 }

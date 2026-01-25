@@ -17,7 +17,7 @@ The app currently mixes bespoke Tailwind layouts and custom components alongside
 ## Proposed Solution
 
 1. Inventory component usage and custom styling across the app:
-   - Scan `components/dashboard-page.tsx`, `components/object-view.tsx`, and `components/tasks/*` for recurring layout and styling patterns.
+   - Scan `components/page/index.tsx`, `components/object-view.tsx`, and `components/tasks/*` for recurring layout and styling patterns.
    - Identify which patterns can be replaced with existing primitives in `components/ui` (Button, Input, Select, Dialog, Tooltip, Table primitives, Sidebar, etc.).
    - Tag custom UI elements that should become reusable components (especially if repeated in multiple places).
 
@@ -46,7 +46,7 @@ The app currently mixes bespoke Tailwind layouts and custom components alongside
 
 ## Acceptance Criteria
 
-- [ ] All app-level UI surfaces (`components/dashboard-page.tsx`, `components/object-view.tsx`, `components/tasks/*`) use shared primitives where feasible; duplicated patterns are consolidated into reusable components.
+- [ ] All app-level UI surfaces (`components/page/index.tsx`, `components/object-view.tsx`, `components/tasks/*`) use shared primitives where feasible; duplicated patterns are consolidated into reusable components.
 - [x] Any newly added shadcn/ui components are sourced from `https://ui.shadcn.com/llms.txt`, placed under `components/ui/` with kebab-case filenames, and exported in `components/ui/index.ts`.
 - [x] Components used in `<main>` default to json-render components unless clearly unique or not intended for generation.
 - [x] Renderer-facing components remain aligned: `components/ui/index.ts` `componentRegistry`, `lib/catalog.ts`, and `app/api/generate/route.ts` are updated together when component availability changes.
@@ -79,7 +79,7 @@ The app currently mixes bespoke Tailwind layouts and custom components alongside
 
 ## References & Research
 
-- `components/dashboard-page.tsx`
+- `components/page/index.tsx`
 - `components/object-view.tsx`
 - `components/tasks/data-table.tsx`
 - `components/tasks/data-table-pagination.tsx`

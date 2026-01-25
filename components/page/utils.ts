@@ -1,3 +1,4 @@
+import { buildObjectRoute, buildViewRoute } from "@/lib/routes";
 import type {
   ObjectRoute,
   RecentBase,
@@ -7,11 +8,7 @@ import type {
   SystemViewEntry,
 } from "./types";
 
-export const buildViewRoute = (id: string) =>
-  `/views/${encodeURIComponent(id)}`;
-
-export const buildObjectRoute = (type: string, id: string) =>
-  `/objects/${encodeURIComponent(type)}/${encodeURIComponent(id)}`;
+export { buildObjectRoute, buildViewRoute };
 
 export const buildObjectRecentId = (type: string, id: string) =>
   `object:${type}:${id}`;

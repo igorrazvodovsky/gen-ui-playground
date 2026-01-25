@@ -1,13 +1,62 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { getByPath } from "@json-render/core";
 import { type ComponentRenderProps, useData } from "@json-render/react";
 
+import { buildObjectRoute } from "@/lib/routes";
 import { formatTableCell } from "@/lib/table-format";
 import { getObjectDefinition, type ObjectField } from "@/lib/object-definitions";
 
 type ObjectRecord = Record<string, unknown>;
+
+const isRenderableId = (value: unknown): value is string | number =>
+  typeof value === "string" || typeof value === "number";
+
+function renderLinkedValue(value: unknown, linkType: string) {
+  if (value === null || value === undefined) return "-";
+  if (Array.isArray(value)) {
+    const entries = value.filter(isRenderableId);
+    if (entries.length === 0) return "-";
+    return (
+      <div className="flex flex-wrap justify-end gap-2 text-right">
+        {entries.map((entry) => {
+          const label = String(entry);
+          return (
+            <Link
+              key={`${linkType}-${label}`}
+              href={buildObjectRoute(linkType, label)}
+              className="font-medium text-primary hover:underline"
+            >
+              {label}
+            </Link>
+          );
+        })}
+      </div>
+    );
+  }
+  if (!isRenderableId(value)) {
+    return formatTableCell(value);
+  }
+  const label = String(value);
+  return (
+    <Link
+      href={buildObjectRoute(linkType, label)}
+      className="font-medium text-primary hover:underline"
+    >
+      {label}
+    </Link>
+  );
+}
+
+function renderFieldValue(item: ObjectRecord, field: ObjectField) {
+  const value = item[field.key];
+  if (field.linkType) {
+    return renderLinkedValue(value, field.linkType);
+  }
+  return formatTableCell(value, field.format);
+}
 
 function FieldList({
   title,
@@ -31,7 +80,7 @@ function FieldList({
           >
             <dt className="text-muted-foreground">{field.label}</dt>
             <dd className="text-right font-medium text-foreground">
-              {formatTableCell(item[field.key], field.format)}
+              {renderFieldValue(item, field)}
             </dd>
           </div>
         ))}

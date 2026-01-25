@@ -13,6 +13,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { getObjectDefinition } from "@/lib/object-definitions";
 import { INITIAL_DATA } from "./initial-data";
 import { Layout } from "./layout";
+import { WORKSPACES } from "./constants";
 import { useCommandMenu } from "./state/use-command-menu";
 import { useKeyboardShortcuts } from "./state/use-keyboard-shortcuts";
 import { useRecentObjects } from "./state/use-recent-objects";
@@ -39,7 +40,9 @@ function Content() {
   const { data } = useData();
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
-  const [activeWorkspace, setActiveWorkspace] = useState("Acme Corp");
+  const [activeWorkspace, setActiveWorkspace] = useState(
+    WORKSPACES[0] ?? "Workspace",
+  );
 
   const commandMenu = useCommandMenu();
   const {
@@ -328,7 +331,11 @@ export function Page() {
       },
       apply_filter: () => alert("Applying filters..."),
       filter_accounts: (params?: Record<string, unknown>) => {
-        const status = typeof params?.status === "string" ? params.status : "all";
+        const status = Array.isArray(params?.status)
+          ? params.status
+          : typeof params?.status === "string"
+            ? params.status
+            : "all";
         window.dispatchEvent(
           new CustomEvent("accounts-filter", { detail: { status } }),
         );

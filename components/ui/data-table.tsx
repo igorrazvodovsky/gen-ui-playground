@@ -83,7 +83,7 @@ export function DataTable({ element }: ComponentRenderProps) {
       : [],
   );
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
-  const [filterValue, setFilterValue] = useState<string | null>(null);
+  const [filterValue, setFilterValue] = useState<string | string[] | null>(null);
   const externalSearch = searchPath
     ? (getByPath(data, searchPath) as string | null)
     : null;
@@ -96,7 +96,7 @@ export function DataTable({ element }: ComponentRenderProps) {
   useEffect(() => {
     if (!filterEventName) return;
     const handler = (event: Event) => {
-      const detail = (event as CustomEvent<{ status?: string }>).detail;
+      const detail = (event as CustomEvent<{ status?: string | string[] }>).detail;
       const status = detail?.status ?? null;
       setFilterValue(status === "all" ? null : status);
     };
@@ -199,7 +199,13 @@ export function DataTable({ element }: ComponentRenderProps) {
     return rows.filter((row) => {
       const value = row[filterField];
       if (value === null || value === undefined) return false;
-      return String(value).toLowerCase() === filterValue.toLowerCase();
+      const normalized = String(value).toLowerCase();
+      if (Array.isArray(filterValue)) {
+        return filterValue.some(
+          (entry) => normalized === String(entry).toLowerCase(),
+        );
+      }
+      return normalized === filterValue.toLowerCase();
     });
   }, [filterField, filterValue, rows]);
 

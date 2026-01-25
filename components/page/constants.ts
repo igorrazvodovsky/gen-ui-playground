@@ -1,20 +1,18 @@
-import {
-  BarChart,
-  BriefcaseBusiness,
-  FileText,
-  LayoutDashboard,
-  ListTodo,
-  Settings,
-  Users,
-} from "lucide-react";
+import { BarChart, FileText, LayoutDashboard, Settings, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
+import { OBJECT_TYPE_METADATA } from "@/lib/object-type-metadata";
+import { type ObjectType } from "@/lib/object-definitions";
 type PromptSuggestion = {
   label: string;
   icon: LucideIcon;
 };
 
-export const WORKSPACES = ["Acme Corp", "Personal", "Team Project"];
+export const WORKSPACES = [
+  "Northloop Metals",
+  "EcoVia Logistics",
+  "GreenPulse Batteries",
+];
 
 export const PROMPT_SUGGESTIONS: PromptSuggestion[] = [
   { label: "Revenue dashboard with metrics and chart", icon: BarChart },
@@ -26,14 +24,21 @@ export const LEGACY_SYSTEM_VIEW_PREFIX = "system-";
 export const RECENT_REORDER_DELAY_MS = 400;
 export const RECENT_OBJECT_STORAGE_KEY = "recent-object-views";
 
+const objectTypeIcons = Object.fromEntries(
+  (Object.entries(OBJECT_TYPE_METADATA) as [ObjectType, { icon: LucideIcon }][])
+    .map(([key, meta]) => [key, meta.icon]),
+);
+
+const objectViewIcons = Object.fromEntries(
+  (Object.entries(OBJECT_TYPE_METADATA) as [ObjectType, { icon: LucideIcon; listView: { kind: string } }][])
+    .filter(([, meta]) => meta.listView.kind !== "hidden")
+    .map(([key, meta]) => [key, meta.icon]),
+);
+
 export const SYSTEM_VIEW_ICONS: Record<string, LucideIcon> = {
   "dashboard": LayoutDashboard,
-  "tasks": ListTodo,
-  "accounts": BriefcaseBusiness,
+  ...objectViewIcons,
   "settings": Settings,
 };
 
-export const OBJECT_TYPE_ICONS: Record<string, LucideIcon> = {
-  "tasks": ListTodo,
-  "accounts": BriefcaseBusiness,
-};
+export const OBJECT_TYPE_ICONS: Record<ObjectType, LucideIcon> = objectTypeIcons;

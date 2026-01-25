@@ -2,6 +2,13 @@
 
 When writing complex features or significant refactors, use an ExecPlan (as described in .agent/PLANS.md) from design to implementation.
 
+## Code simplification working agreement
+
+When code is written or modified, prioritize:
+- Apply this repo’s established standards (linting, formatting, naming, module conventions).
+- Prefer clarity over cleverness (avoid dense one-liners and nested ternaries).
+- Keep scope tight by default: focus on code touched in this session/changeset.
+
 # Repository Guidelines
 
 ## Project Structure & Module Organization

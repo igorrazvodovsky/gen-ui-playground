@@ -1,5 +1,12 @@
 import type { UITree } from "@json-render/core";
 
+import { type ObjectType } from "./object-definitions";
+import {
+  OBJECT_TYPE_METADATA,
+  type ObjectTableView,
+  type ObjectTypeMetadata,
+} from "./object-type-metadata";
+
 export type SystemView = {
   id: string;
   label: string;
@@ -443,7 +450,7 @@ const accountsTree: UITree = {
             value: "risk",
             label: "At risk",
             action: "filter_accounts",
-            params: { status: "At Risk" },
+            params: { status: ["At Risk", "Churn Risk"] },
           },
         ],
       },
@@ -497,6 +504,42 @@ const accountsTree: UITree = {
     },
   },
 };
+
+const buildTableTree = (type: ObjectType, view: ObjectTableView): UITree => {
+  const meta = OBJECT_TYPE_METADATA[type];
+  return {
+    root: type,
+    elements: {
+      [type]: {
+        key: type,
+        type: "DataTable",
+        props: {
+          dataPath: meta.dataPath,
+          linkBasePath: meta.linkBasePath,
+          ...view.props,
+        },
+      },
+    },
+  };
+};
+
+const getCustomPrompt = (meta: ObjectTypeMetadata) =>
+  meta.listView.kind === "custom" ? meta.listView.prompt : meta.pluralLabel;
+
+const tableSystemViews = (
+  Object.entries(OBJECT_TYPE_METADATA) as [ObjectType, ObjectTypeMetadata][]
+).flatMap(([type, meta]) => {
+  if (meta.listView.kind !== "table") return [];
+  return [
+    {
+      id: type,
+      label: meta.pluralLabel,
+      prompt: meta.listView.prompt,
+      tree: buildTableTree(type, meta.listView),
+    },
+  ];
+});
+
 
 const settingsTree: UITree = {
   root: "settings",
@@ -743,18 +786,17 @@ export const SYSTEM_VIEWS: SystemView[] = [
   },
   {
     id: "tasks",
-    label: "Tasks",
-    prompt:
-      "Task tracker with filters, column toggles, row actions, and pagination.",
+    label: OBJECT_TYPE_METADATA.tasks.pluralLabel,
+    prompt: getCustomPrompt(OBJECT_TYPE_METADATA.tasks),
     tree: tasksTree,
   },
   {
     id: "accounts",
-    label: "Accounts",
-    prompt:
-      "Accounts overview with tabs, search, and a sortable table for ARR, status, and renewals.",
+    label: OBJECT_TYPE_METADATA.accounts.pluralLabel,
+    prompt: getCustomPrompt(OBJECT_TYPE_METADATA.accounts),
     tree: accountsTree,
   },
+  ...tableSystemViews,
   {
     id: "settings",
     label: "Settings",

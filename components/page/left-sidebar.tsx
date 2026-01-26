@@ -38,7 +38,7 @@ import {
   SYSTEM_VIEW_ICONS,
   WORKSPACES,
 } from "@/components/page/constants";
-import { type ObjectType } from "@/lib/object-definitions";
+import { isObjectType } from "@/lib/object-definitions";
 import type {
   ObjectRoute,
   RecentEntry,
@@ -199,9 +199,8 @@ export function LeftSidebar({
                         entry.item.objectId,
                       );
                   const Icon =
-                    entry.kind === "object"
-                      ? OBJECT_TYPE_ICONS[entry.item.objectType as ObjectType] ??
-                        Clock
+                    entry.kind === "object" && isObjectType(entry.item.objectType)
+                      ? OBJECT_TYPE_ICONS[entry.item.objectType] ?? Clock
                       : Clock;
                   const isActive = isView
                     ? activeViewId === entry.item.id

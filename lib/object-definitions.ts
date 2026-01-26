@@ -23,7 +23,6 @@ export type ObjectDefinition = {
   dataPath: string;
   idKey: string;
   titleKey: string;
-  listRoute: string;
   meta?: ObjectField[];
   badges?: ObjectField[];
   summary?: ObjectField[];
@@ -34,6 +33,11 @@ export type ObjectDefinition = {
 export const OBJECT_DEFINITIONS: Record<ObjectType, ObjectDefinition> =
   OBJECT_DEFINITION_DATA;
 
+export function isObjectType(value: string): value is ObjectType {
+  return Object.prototype.hasOwnProperty.call(OBJECT_DEFINITION_DATA, value);
+}
+
 export function getObjectDefinition(type: string): ObjectDefinition | null {
-  return OBJECT_DEFINITIONS[type as ObjectType] ?? null;
+  if (!isObjectType(type)) return null;
+  return OBJECT_DEFINITIONS[type];
 }

@@ -11,19 +11,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 
 import { OBJECT_DEFINITIONS, type ObjectType } from "./object-definitions";
-
-type TableColumn = {
-  key: string;
-  label: string;
-  format?: "text" | "currency" | "date" | "badge" | null;
-  sortable?: boolean | null;
-  link?: boolean | null;
-};
-
-type InitialSort = {
-  key: string;
-  direction: "asc" | "desc";
-};
+import type { InitialSort, TableColumn } from "./data-table-types";
 
 export type ObjectTableView = {
   kind: "table";
@@ -51,7 +39,6 @@ export type ObjectTypeMetadata = {
   pluralLabel: string;
   icon: LucideIcon;
   linkBasePath: string;
-  listRoute: string;
   dataPath: string;
   listView: ObjectListView;
 };
@@ -67,7 +54,6 @@ const buildMetadata = (
     pluralLabel: definition.pluralLabel,
     icon,
     linkBasePath: `/objects/${type}`,
-    listRoute: definition.listRoute,
     dataPath: definition.dataPath,
     listView,
   };

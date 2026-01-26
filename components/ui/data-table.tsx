@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Checkbox } from "./checkbox";
 import { formatTableCell } from "@/lib/table-format";
+import type { InitialSort, TableColumn } from "@/lib/data-table-types";
 import { TableEmpty } from "@/components/ui/table-empty";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,19 +27,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table-primitives";
-
-type TableColumn = {
-  key: string;
-  label: string;
-  format?: "text" | "currency" | "date" | "badge" | null;
-  sortable?: boolean | null;
-  link?: boolean | null;
-};
-
-type InitialSort = {
-  key: string;
-  direction: "asc" | "desc";
-};
 
 export function DataTable({ element }: ComponentRenderProps) {
   const {

@@ -6,7 +6,6 @@ export const OBJECT_DEFINITION_DATA = {
     dataPath: "/accounts/list",
     idKey: "id",
     titleKey: "name",
-    listRoute: "/views/accounts",
     meta: [{ key: "owner", label: "Owner" }],
     badges: [
       { key: "status", label: "Status", format: "badge" },
@@ -71,7 +70,6 @@ export const OBJECT_DEFINITION_DATA = {
     dataPath: "/tasks/items",
     idKey: "id",
     titleKey: "title",
-    listRoute: "/views/tasks",
     meta: [{ key: "id", label: "Task ID" }],
     badges: [
       { key: "status", label: "Status", format: "badge" },
@@ -116,7 +114,6 @@ export const OBJECT_DEFINITION_DATA = {
     dataPath: "/facilities/list",
     idKey: "id",
     titleKey: "name",
-    listRoute: "/views/facilities",
     summary: [
       { key: "type", label: "Type", format: "badge" },
       { key: "status", label: "Status", format: "badge" },
@@ -155,7 +152,6 @@ export const OBJECT_DEFINITION_DATA = {
     dataPath: "/materials/list",
     idKey: "id",
     titleKey: "name",
-    listRoute: "/views/materials",
     summary: [
       { key: "category", label: "Category", format: "badge" },
       { key: "recycledContent", label: "Recycled Content" },
@@ -199,7 +195,6 @@ export const OBJECT_DEFINITION_DATA = {
     dataPath: "/batches/list",
     idKey: "id",
     titleKey: "id",
-    listRoute: "/views/batches",
     summary: [
       { key: "materialId", label: "Material", linkType: "materials" },
       { key: "quantity", label: "Quantity" },
@@ -238,7 +233,6 @@ export const OBJECT_DEFINITION_DATA = {
     dataPath: "/shipments/list",
     idKey: "id",
     titleKey: "id",
-    listRoute: "/views/shipments",
     summary: [
       { key: "status", label: "Status", format: "badge" },
       { key: "eta", label: "ETA", format: "date" },
@@ -281,7 +275,6 @@ export const OBJECT_DEFINITION_DATA = {
     dataPath: "/assets/list",
     idKey: "id",
     titleKey: "id",
-    listRoute: "/views/assets",
     summary: [
       { key: "type", label: "Type", format: "badge" },
       { key: "condition", label: "Condition", format: "badge" },
@@ -321,7 +314,6 @@ export const OBJECT_DEFINITION_DATA = {
     dataPath: "/epcis/events",
     idKey: "id",
     titleKey: "id",
-    listRoute: "/views/epcis-events",
     summary: [
       { key: "eventType", label: "Event Type", format: "badge" },
       { key: "bizStep", label: "Business Step", format: "badge" },

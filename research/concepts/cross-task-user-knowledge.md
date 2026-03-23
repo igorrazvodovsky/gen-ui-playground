@@ -49,6 +49,7 @@ The non-hierarchical finding challenges any attempt to model user preferences as
 
 - **Stored in** [[intent-specification-as-common-ground]] — cross-task knowledge needs a persistent, human-readable home. Intent specifications (CLAUDE.md, cursor rules) are exactly this: documents the user can inspect and correct that persist across sessions. The knowledge items InterQuest discovers could be formatted as intent specification entries. SemanticCommit's conflict detection then applies when new knowledge potentially contradicts existing items.
 - **Updated via** [[impact-analysis-before-generation]] — when the system infers a new cross-task preference that conflicts with an existing one (e.g., user now prefers cards after previously preferring tables), impact analysis should surface this conflict before updating the knowledge store.
+- **Scoped by** [[work-context-model]] — InterQuest's knowledge items could store preferences with scope defined by JTBD circumstance, not just task type
 
 ## Open threads
 

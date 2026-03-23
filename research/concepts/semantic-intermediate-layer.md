@@ -37,6 +37,7 @@ Concretely: the genUI pipeline's first LLM touchpoint (spec generation) should o
 
 - **Extended temporally by** [[intent-specification-as-common-ground]] — the semantic layer is a per-session snapshot: "here's the structured interpretation of your current prompt." Intent specifications (Vaithilingam et al., UIST '25) extend this to a *persistent* intermediate that accumulates across sessions. The semantic layer mediates between prompt and generation; the intent specification mediates between the user and the AI agent over time. Both are inspectable, editable, structured representations — at different timescales.
 - **Pre-modification counterpart** [[impact-analysis-before-generation]] — the semantic layer shows "here's what I'll generate." Impact analysis shows "here's what your change will affect in the existing knowledge." Both are feedforward mechanisms at different lifecycle points.
+- **Surfaces** [[work-context-model]] assumptions — JTBD-enriched goals (job/circumstance/outcome) should be visible in the semantic layer so users can correct misidentified context
 
 ## Open threads
 

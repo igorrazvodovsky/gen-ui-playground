@@ -35,6 +35,7 @@ Three types of adaptation:
 - **Extends** [[constraint-driven component selection]] — domain constraints select *which* component; user context selects *which variant*
 - **Informs** [[LLM-operable interface]] — the user profile model is another surface the agent can inspect and reason about
 - **Tension with** [[guardrailed generative UI]] — adaptation rules modify the generated UI, potentially outside catalog constraints
+- **Complemented by** [[work-context-model]] — OADAPT's user context (disabilities, preferences) is orthogonal to the JTBD-enriched goal structure. OADAPT handles *who* the user is; JTBD-enriched goals handle *what job in what circumstance*. Both feed adaptation from different angles
 
 ## Practical implementations
 

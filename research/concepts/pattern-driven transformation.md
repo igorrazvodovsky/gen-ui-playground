@@ -20,6 +20,7 @@ Pattern-driven transformation codifies these mappings: if you use pattern X at t
 - **Related to** [[specification-based rendering]] (from json-render) — both use declarative specs, but pattern-driven transformation happens *upstream* of rendering
 - **Implemented by** [[design systems as pattern libraries]] — modern design systems provide production-ready pattern transformation rules
 - **Complementary to** [[constraint-driven component selection]] — pattern-driven transformation handles macro-level mapping (task → UI sections), while constraint-driven selection handles micro-level mapping (field → component). The Nunes et al. [[ontology-driven UI generation]] system uses only constraint rules (no patterns), which works for form-like UIs but lacks task-level structure. The ideal system uses both: patterns for information architecture, constraints for field-level rendering.
+- **Differentiated by** [[work-context-model]] — JTBD circumstance on goals drives pattern selection. Same task, different circumstances → different patterns (time-pressured round → scannable summary; audit → detailed table)
 
 ## Practical implementations
 

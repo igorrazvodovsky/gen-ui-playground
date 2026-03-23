@@ -35,6 +35,7 @@ The pipeline needs to support this at the interaction layer. Concretely: the sam
 For the json-render pipeline, this means the generation system needs a "confidence/initiative" dial, not a fixed workflow. A simple initial implementation: let the user choose a mode ("guide me" vs. "I know what I want") that adjusts how many intermediate checkpoints are shown.
 
 - **Modality-autonomy inversion**: Andru & Saksena (2025) find that high-complexity modalities (canvas, split-screen) don't necessarily support high autonomy — users want *more* control for complex tasks, not less ([[modality-as-task-container]]). Prompt bar and rail are perceived as AI-led (system takes initiative for speed); canvas and split-screen are perceived as human-led (user drives, AI assists). This is an inversion of the naive expectation that more capable modalities = more autonomy. Progressive control — where users retain intervention ability at any autonomy level — is the resolution. The modality encodes a *default* autonomy level, but the user can always shift it.
+- **Informed by** [[work-context-model]] — JTBD social outcomes and Agent/Role structure shape how autonomous the system should be. Solo context → more autonomous; team context → actions affecting others need confirmation
 
 ## Open threads
 

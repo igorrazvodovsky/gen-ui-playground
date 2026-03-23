@@ -19,6 +19,7 @@ The mechanism generalises beyond conversational AI. Any system that gives an LLM
 - **Operationalises** one side of [[structured vs unstructured tension]] — the knowledge graph is the structured pole; the LLM handles the unstructured-to-structured translation.
 - **Complementary to** [[constraint-driven component selection]] — constraint rules handle deterministic micro-decisions (data type → widget); KG-grounded generation handles the macro navigation (which part of the knowledge base is relevant to this query).
 - **Informs** [[guardrailed generative UI]] — the knowledge graph acts as a semantic guardrail in addition to json-render's structural guardrails (schema validation, component whitelisting). The KG constrains *what the LLM can say*; the catalog constrains *what it can render*.
+- **Stores** [[work-context-model]] stable dimensions — domain constraints and institutional rules (checklist dimensions 2 and 6) are best served as knowledge-graph entries rather than goal properties
 
 ## Practical implementations
 

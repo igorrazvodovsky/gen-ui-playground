@@ -26,4 +26,4 @@ npm run dev:json-render
 - Does the same spec read well across multiple task states?
 - Is the state/spec view legible enough for agents to reason about?
 - What parts of the UI obviously need stronger component semantics or two-way binding next?
-
+- What shape of goal/task IR would compile into this spec without throwing away too much task structure?

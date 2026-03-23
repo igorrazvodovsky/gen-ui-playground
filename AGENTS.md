@@ -5,10 +5,11 @@ This repository is optimized for agent-driven implementation. Treat this file as
 ## Start here
 
 1. Read `docs/README.md`.
-2. Read `docs/ARCHITECTURE.md` for repository boundaries and extraction rules.
-3. Read `docs/PLANS.md` for the current milestone sequence.
-4. Read `docs/FRONTEND.md` before changing renderer or UI experiment code.
-5. Read `docs/DESIGN.md` before changing workflow, process, or repo conventions.
+2. Read `docs/VISION.md` for the parent scope and branch model.
+3. Read `docs/ARCHITECTURE.md` for repository boundaries and extraction rules.
+4. Read `docs/PLANS.md` for the current milestone sequence.
+5. Read `docs/FRONTEND.md` before changing renderer or UI experiment code.
+6. Read `docs/DESIGN.md` before changing workflow, process, or repo conventions.
 
 ## Source-of-truth boundaries
 
@@ -29,8 +30,8 @@ If code changes invalidate a documented architectural decision, update the relev
 
 ## Key context files outside docs
 
+- `research/vision tree.md`: parent vision. Branch 2 is the current implementation focus, not the whole scope.
 - `research/research-project.md`: project goal, pipeline, and research approach.
 - `research/solution tree.md`: opportunity/solution/experiment map.
 - `research/synthesis.md`: current synthesized understanding.
 - `domain/README.md`: current target domain and modeling boundaries.
-

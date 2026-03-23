@@ -25,14 +25,23 @@ Choose tools and abstractions that are easy for an agent to inspect, run, and mo
 
 Implementation should stay traceable back to the research material:
 
+- `research/vision tree.md` defines the parent program.
 - `research/research-project.md` defines the target pipeline.
 - `research/solution tree.md` defines the problem map and experiment opportunities.
 - `docs/` translates those into repo-level decisions.
 - `experiments/` validates them in runnable form.
 
+In practice, this means every change should be clear about which level it serves:
+
+- vision-level context,
+- current branch focus,
+- or a single experiment decision.
+
 ### Bias toward thin vertical slices
 
 Do not scaffold the entire future architecture up front. Add just enough structure to support the next concrete experiment with a clean upgrade path.
+
+This matters more because the repo operates with the broader vision as context. The right move is not to scaffold all three branches at once; it is to let the larger vision constrain local decisions while the codebase still advances through branch 2.
 
 ## Current non-goals
 

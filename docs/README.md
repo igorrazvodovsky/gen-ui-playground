@@ -6,6 +6,7 @@ The goal is the same one described in OpenAI's harness-engineering write-up: kee
 
 ## What belongs here
 
+- `VISION.md`: how this repo fits into the broader LLM-operable-interface program and which branch is active now.
 - `ARCHITECTURE.md`: repository structure, package boundaries, and extraction rules.
 - `DESIGN.md`: operating principles for an AI-first research codebase.
 - `FRONTEND.md`: renderer decisions, UI experiment boundaries, and frontend integration notes.
@@ -15,6 +16,8 @@ The goal is the same one described in OpenAI's harness-engineering write-up: kee
 ## Relationship to the rest of the repo
 
 - `research/` is upstream evidence and concept work. It can be broader and more speculative than the implementation repo.
+- `research/vision tree.md` is the parent scope. It frames the three-branch program the repo should keep in mind.
+- `research/research-project.md` is the current Branch 2 focus.
 - `docs/` translates that research into concrete build decisions.
 - `domain/` contains the current target domain pack that experiments should use when they need realistic fixtures.
 - `experiments/` contains runnable validations of the hypotheses described in `research/solution tree.md`.
@@ -22,4 +25,3 @@ The goal is the same one described in OpenAI's harness-engineering write-up: kee
 ## Maintenance rule
 
 When one of these becomes stale, fix the doc in the same change that invalidates it. The repo should remain legible to a new agent without access to external context.
-

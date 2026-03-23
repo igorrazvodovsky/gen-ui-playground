@@ -1,0 +1,278 @@
+version: 0.1
+last_updated: 2026-03-22
+domain: recipss-laundry-service-operations
+
+entities:
+  - id: appliance
+    label: Appliance
+    evidence_level: source-backed
+    description: Connected washing machine operated as an OEM-owned service asset.
+    key_attributes:
+      - name: appliance_id
+        type: string
+        required: true
+      - name: model
+        type: string
+      - name: connectivity_status
+        type: enum
+        values: [online, offline, degraded]
+      - name: ppu_flag
+        type: boolean
+      - name: current_location
+        type: reference(site)
+      - name: lifecycle_state
+        type: reference(appliance_lifecycle_state)
+      - name: service_history
+        type: list(reference(maintenance_case))
+    relationships:
+      - relation: linked_to
+        target: contract
+        cardinality: 0..1
+      - relation: installed_at
+        target: site
+        cardinality: 0..1
+
+  - id: site
+    label: Site
+    evidence_level: synthesis
+    description: Physical context in which one or more appliances operate, such as a private home, hotel, or shared laundry room.
+    key_attributes:
+      - name: site_id
+        type: string
+        required: true
+      - name: country
+        type: string
+      - name: site_type
+        type: enum
+        values: [private_home, shared_laundry_room, hotel, laundrette, student_dorm, small_business]
+      - name: postal_code
+        type: string
+      - name: connectivity_owner
+        type: reference(user_account)
+    relationships:
+      - relation: hosts
+        target: appliance
+        cardinality: 0..n
+
+  - id: user_account
+    label: User account
+    evidence_level: source-backed
+    description: Identity used for registration, login, service access, and application features.
+    key_attributes:
+      - name: user_id
+        type: string
+        required: true
+      - name: full_name
+        type: string
+      - name: email
+        type: string
+      - name: account_type
+        type: enum
+        values: [private, business]
+      - name: communication_preferences
+        type: object
+    relationships:
+      - relation: signs
+        target: contract
+        cardinality: 0..n
+      - relation: holds
+        target: contract_role_assignment
+        cardinality: 0..n
+
+  - id: contract
+    label: Pay-per-use contract
+    evidence_level: source-backed
+    description: Commercial agreement governing usage, billing, delivery, and service terms.
+    key_attributes:
+      - name: contract_id
+        type: string
+        required: true
+      - name: contract_type
+        type: enum
+        values: [master, visitor]
+      - name: state
+        type: reference(contract_lifecycle_state)
+      - name: start_date
+        type: date
+      - name: end_date
+        type: date
+      - name: pricing_plan
+        type: object
+      - name: delivery_included
+        type: boolean
+      - name: installation_included
+        type: boolean
+    relationships:
+      - relation: billed_to
+        target: user_account
+        cardinality: 1
+      - relation: linked_to
+        target: appliance
+        cardinality: 0..1
+
+  - id: contract_role_assignment
+    label: Contract role assignment
+    evidence_level: synthesis
+    description: Assignment of master, visitor, or alias access behavior to a user in relation to a contract or appliance.
+    key_attributes:
+      - name: role
+        type: enum
+        values: [master, visitor, alias]
+      - name: approval_status
+        type: enum
+        values: [pending, approved, denied, not_required]
+      - name: billing_target
+        type: enum
+        values: [own_contract, master_contract]
+    relationships:
+      - relation: for_user
+        target: user_account
+        cardinality: 1
+      - relation: on_contract
+        target: contract
+        cardinality: 0..1
+      - relation: on_appliance
+        target: appliance
+        cardinality: 0..1
+
+  - id: usage_event
+    label: Usage event
+    evidence_level: source-backed
+    description: Recorded machine usage data used for charging, diagnostics, and behavioral feedback.
+    key_attributes:
+      - name: usage_id
+        type: string
+        required: true
+      - name: appliance_id
+        type: string
+      - name: program_id
+        type: string
+      - name: started_at
+        type: datetime
+      - name: duration_minutes
+        type: integer
+      - name: wash_parameters
+        type: object
+      - name: billed_contract_id
+        type: string
+    relationships:
+      - relation: belongs_to
+        target: billing_period
+        cardinality: 0..1
+      - relation: generated_by
+        target: appliance
+        cardinality: 1
+
+  - id: billing_period
+    label: Billing period
+    evidence_level: synthesis
+    description: Timebox used to aggregate usage and generate customer charges.
+    key_attributes:
+      - name: period_id
+        type: string
+        required: true
+      - name: start_date
+        type: date
+      - name: end_date
+        type: date
+      - name: status
+        type: enum
+        values: [open, closing, billed, disputed]
+    relationships:
+      - relation: contains
+        target: usage_event
+        cardinality: 0..n
+
+  - id: bill
+    label: Bill
+    evidence_level: source-backed
+    description: Charge output generated from usage, pricing rules, and contract terms.
+    key_attributes:
+      - name: bill_id
+        type: string
+        required: true
+      - name: total_cost
+        type: money
+      - name: currency
+        type: string
+      - name: generated_at
+        type: datetime
+      - name: status
+        type: enum
+        values: [draft, issued, paid, overdue, disputed]
+    relationships:
+      - relation: for_contract
+        target: contract
+        cardinality: 1
+      - relation: for_period
+        target: billing_period
+        cardinality: 1
+
+  - id: maintenance_case
+    label: Maintenance case
+    evidence_level: source-backed
+    description: Service issue initiated by user request, machine error, predictive alert, or scheduled maintenance.
+    key_attributes:
+      - name: case_id
+        type: string
+        required: true
+      - name: trigger_type
+        type: enum
+        values: [user_request, machine_error, predictive_alert, scheduled_maintenance]
+      - name: severity
+        type: enum
+        values: [low, medium, high, critical]
+      - name: state
+        type: reference(maintenance_lifecycle_state)
+      - name: error_code
+        type: string
+      - name: reported_at
+        type: datetime
+    relationships:
+      - relation: for_appliance
+        target: appliance
+        cardinality: 1
+      - relation: assigned_to
+        target: technician
+        cardinality: 0..1
+
+  - id: refurbishment_cycle
+    label: Refurbishment cycle
+    evidence_level: source-backed
+    description: Cycle of inspection, repair, cleaning, and release after asset return.
+    key_attributes:
+      - name: refurbishment_id
+        type: string
+        required: true
+      - name: intake_date
+        type: date
+      - name: outcome
+        type: enum
+        values: [redeploy, hold, dismantle]
+      - name: notes
+        type: string
+    relationships:
+      - relation: for_appliance
+        target: appliance
+        cardinality: 1
+
+  - id: sustainability_report
+    label: Sustainability report
+    evidence_level: source-backed
+    description: User-facing or operator-facing summary of usage patterns, efficiency, and improvement suggestions.
+    key_attributes:
+      - name: report_id
+        type: string
+        required: true
+      - name: report_type
+        type: enum
+        values: [user_feedback, peer_comparison, savings_summary, fleet_insight]
+      - name: period
+        type: string
+      - name: insights
+        type: list(string)
+    relationships:
+      - relation: derived_from
+        target: usage_event
+        cardinality: 0..n
+

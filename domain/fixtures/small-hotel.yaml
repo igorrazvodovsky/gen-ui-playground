@@ -1,0 +1,65 @@
+scenario_id: small-hotel-nl-001
+last_updated: 2026-03-22
+summary: Small hotel using pay-per-use machines as business assets with regular maintenance needs and staff turnover.
+
+site:
+  site_id: site-nl-duiven-hotel-001
+  country: Netherlands
+  site_type: hotel
+  postal_code: "6921"
+
+actors:
+  - actor_id: org-hotel
+    actor_type: business_customer
+    role: master_user
+    name: Riverside Hotel
+  - actor_id: ops-001
+    actor_type: service_operator
+    role: service_operator
+    name: NL Service Desk
+
+appliances:
+  - appliance_id: wm-nl-301
+    model: ASKO-WM75C
+    connectivity_status: degraded
+    lifecycle_state: maintenance_pending
+    current_location: site-nl-duiven-hotel-001
+  - appliance_id: wm-nl-302
+    model: ASKO-WM85C
+    connectivity_status: online
+    lifecycle_state: active_in_use
+    current_location: site-nl-duiven-hotel-001
+
+contracts:
+  - contract_id: contract-nl-hotel-001
+    contract_type: master
+    state: active
+    billed_to: org-hotel
+
+maintenance_cases:
+  - case_id: maint-nl-055
+    appliance_id: wm-nl-301
+    trigger_type: predictive_alert
+    severity: medium
+    state: awaiting_appointment
+    note: Bearing wear predicted within 14 days.
+
+recent_events:
+  - kind: usage_summary
+    appliance_id: wm-nl-302
+    cycles_last_7_days: 39
+  - kind: alert
+    appliance_id: wm-nl-301
+    code: predictive-bearing-risk
+
+open_items:
+  - type: scheduling
+    note: Hotel requests maintenance before weekend peak.
+  - type: cost_review
+    note: Manager wants per-machine operating cost comparison.
+
+candidate_views:
+  - fleet overview by machine
+  - maintenance queue
+  - cost-per-asset comparison
+

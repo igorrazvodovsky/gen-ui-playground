@@ -1,0 +1,150 @@
+version: 0.1
+last_updated: 2026-03-22
+domain: recipss-laundry-service-operations
+
+lifecycles:
+  - id: appliance_lifecycle
+    evidence_level: synthesis
+    description: Physical lifecycle of an OEM-owned appliance across deployment, service, return, and redeployment.
+    states:
+      - candidate_stock
+      - allocated_for_contract
+      - delivered
+      - active_in_use
+      - maintenance_pending
+      - under_service
+      - replacement_pending
+      - pickup_pending
+      - returned_to_warehouse
+      - refurbishment_in_progress
+      - ready_for_redeployment
+      - dismantled_for_parts
+      - recycled_or_removed
+    transitions:
+      - from: candidate_stock
+        to: allocated_for_contract
+        trigger: contract approved and stock reserved
+      - from: allocated_for_contract
+        to: delivered
+        trigger: logistics completes delivery
+      - from: delivered
+        to: active_in_use
+        trigger: installation and linkage completed
+      - from: active_in_use
+        to: maintenance_pending
+        trigger: error, alert, or scheduled intervention
+      - from: maintenance_pending
+        to: under_service
+        trigger: technician assigned and visit started
+      - from: under_service
+        to: active_in_use
+        trigger: repair completed successfully
+      - from: under_service
+        to: replacement_pending
+        trigger: repair not viable on site
+      - from: active_in_use
+        to: pickup_pending
+        trigger: contract termination or replacement
+      - from: pickup_pending
+        to: returned_to_warehouse
+        trigger: pickup completed
+      - from: returned_to_warehouse
+        to: refurbishment_in_progress
+        trigger: warehouse intake accepted
+      - from: refurbishment_in_progress
+        to: ready_for_redeployment
+        trigger: asset passes inspection and cleaning
+      - from: refurbishment_in_progress
+        to: dismantled_for_parts
+        trigger: asset not fit for next lifecycle
+      - from: dismantled_for_parts
+        to: recycled_or_removed
+        trigger: reusable parts recovered and remainder removed
+
+  - id: contract_lifecycle
+    evidence_level: synthesis
+    description: Commercial lifecycle of a pay-per-use agreement.
+    states:
+      - draft
+      - awaiting_identity
+      - awaiting_selection
+      - awaiting_delivery
+      - active
+      - suspended
+      - replacement_in_progress
+      - termination_requested
+      - ended
+    transitions:
+      - from: draft
+        to: awaiting_identity
+        trigger: user starts registration
+      - from: awaiting_identity
+        to: awaiting_selection
+        trigger: account and role confirmed
+      - from: awaiting_selection
+        to: awaiting_delivery
+        trigger: contract accepted and asset assigned
+      - from: awaiting_delivery
+        to: active
+        trigger: appliance delivered and linked
+      - from: active
+        to: suspended
+        trigger: payment or service issue disables normal operation
+      - from: suspended
+        to: active
+        trigger: issue resolved
+      - from: active
+        to: replacement_in_progress
+        trigger: asset replacement ordered
+      - from: replacement_in_progress
+        to: active
+        trigger: new asset linked
+      - from: active
+        to: termination_requested
+        trigger: customer or OEM requests termination
+      - from: termination_requested
+        to: ended
+        trigger: pickup completed and contract closed
+
+  - id: maintenance_lifecycle
+    evidence_level: synthesis
+    description: Service-case lifecycle from detection to closure.
+    states:
+      - detected
+      - triaged
+      - user_self_service
+      - awaiting_appointment
+      - scheduled
+      - technician_en_route
+      - repair_in_progress
+      - resolved
+      - closed
+      - closed_without_visit
+    transitions:
+      - from: detected
+        to: triaged
+        trigger: operator reviews trigger and severity
+      - from: triaged
+        to: user_self_service
+        trigger: issue can be solved with user guidance
+      - from: user_self_service
+        to: closed_without_visit
+        trigger: user confirms issue solved
+      - from: triaged
+        to: awaiting_appointment
+        trigger: on-site intervention required
+      - from: awaiting_appointment
+        to: scheduled
+        trigger: date agreed with user
+      - from: scheduled
+        to: technician_en_route
+        trigger: visit starts
+      - from: technician_en_route
+        to: repair_in_progress
+        trigger: technician arrives and begins work
+      - from: repair_in_progress
+        to: resolved
+        trigger: repair or maintenance completed
+      - from: resolved
+        to: closed
+        trigger: no further action required

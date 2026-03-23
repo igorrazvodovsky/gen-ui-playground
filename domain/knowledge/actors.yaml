@@ -1,0 +1,187 @@
+version: 0.1
+last_updated: 2026-03-22
+domain: recipss-laundry-service-operations
+
+actors:
+  - id: manufacturer_oem
+    label: Manufacturer / platform owner
+    type: organization
+    evidence_level: source-backed
+    description: Owns the appliance fleet and operates the pay-per-use service model.
+    goals:
+      - Extend appliance lifetime across multiple service cycles
+      - Monitor usage and condition
+      - Bill correctly and retain customers
+      - Minimize repair, logistics, and refurbishment costs
+    concerns:
+      - Slow revenue uptake and retention risk
+      - Internal system complexity
+      - Trust, legal clarity, and product return
+    primary_views:
+      - fleet operations
+      - contract portfolio
+      - billing exceptions
+      - maintenance pipeline
+
+  - id: strategic_business_unit
+    label: Local market business unit
+    type: organization
+    evidence_level: source-backed
+    description: Local unit responsible for sales, marketing, logistics coordination, and service support in a country.
+    goals:
+      - Roll out the offer in local markets
+      - Coordinate installation, pickup, and maintenance
+    concerns:
+      - Local legal differences
+      - Operational burden versus existing sales model
+    primary_views:
+      - local rollout dashboard
+      - site and service coverage
+
+  - id: business_customer
+    label: Business customer
+    type: organization_or_person
+    evidence_level: source-backed
+    description: Customer using the service in business settings such as hotels, laundry rooms, or small enterprises.
+    goals:
+      - Avoid upfront capital cost
+      - Keep appliances available and service included
+      - Allocate charges fairly in shared settings
+    concerns:
+      - Downtime
+      - Contract clarity
+      - Shared-user billing fairness
+    primary_views:
+      - site overview
+      - contract detail
+      - cost and usage summary
+
+  - id: private_customer
+    label: Private customer
+    type: person
+    evidence_level: source-backed
+    description: End user using the service in a household context.
+    goals:
+      - Low upfront cost
+      - Reliable service
+      - Clear usage and cost feedback
+    concerns:
+      - Lack of ownership
+      - Data collection
+      - Ease of support
+    primary_views:
+      - appliance status
+      - current costs
+      - service request
+      - sustainability feedback
+
+  - id: master_user
+    label: Master user
+    type: role
+    evidence_level: source-backed
+    description: Primary contract holder linked to an appliance and billing account.
+    goals:
+      - Use and manage the appliance
+      - Control access for others
+      - Schedule service actions
+    concerns:
+      - Unexpected charges
+      - Access management
+    primary_views:
+      - contract detail
+      - access management
+      - billing history
+
+  - id: visitor_user
+    label: Visitor user
+    type: role
+    evidence_level: source-backed
+    description: User with their own contract who can use an existing appliance when logged in.
+    goals:
+      - Use available appliance without owning it
+      - Be billed to own contract
+    concerns:
+      - Access friction
+      - Session and billing correctness
+    primary_views:
+      - session start
+      - contract and cost review
+
+  - id: alias_user
+    label: Alias user
+    type: role
+    evidence_level: source-backed
+    description: User approved by a master user to use the appliance without holding a separate contract.
+    goals:
+      - Gain appliance access through a master user
+    concerns:
+      - Approval delay
+      - Limited control
+    primary_views:
+      - access request status
+      - session start
+
+  - id: service_operator
+    label: Service operator / call center
+    type: person_or_team
+    evidence_level: source-backed
+    description: Triage point for maintenance, predictive alerts, and appointment setting.
+    goals:
+      - Triage issues quickly
+      - Resolve minor issues remotely
+      - Schedule repair efficiently
+    concerns:
+      - Missing diagnostics
+      - User no-shows
+    primary_views:
+      - maintenance queue
+      - case detail
+      - appointment planning
+
+  - id: technician
+    label: Repair or maintenance technician
+    type: person
+    evidence_level: source-backed
+    description: Performs on-site repair, maintenance, and appliance replacement work.
+    goals:
+      - Resolve the case on first visit
+      - Access machine history and instructions
+    concerns:
+      - Missing parts
+      - Wrong configuration
+    primary_views:
+      - service order detail
+      - appliance history
+      - AR or instruction support
+
+  - id: logistics_partner
+    label: Logistics and distribution partner
+    type: organization
+    evidence_level: source-backed
+    description: Delivers, installs, replaces, and picks up appliances.
+    goals:
+      - Move assets on time
+      - Reduce failed pickups and deliveries
+    concerns:
+      - Customer availability
+      - Damage risk
+    primary_views:
+      - delivery orders
+      - pickup scheduling
+
+  - id: refurbishment_operator
+    label: Refurbishment and warehouse operator
+    type: person_or_team
+    evidence_level: source-backed
+    description: Inspects returned appliances, cleans, repairs, disassembles, and marks them for reuse or removal.
+    goals:
+      - Maximize redeployment of viable assets
+      - Recover reusable parts
+    concerns:
+      - Incomplete service history
+      - Asset condition uncertainty
+    primary_views:
+      - returned asset intake
+      - refurbishment queue
+      - parts recovery
+

@@ -1,0 +1,52 @@
+scenario_id: private-household-at-001
+last_updated: 2026-03-22
+summary: Private household with a single connected washing machine and one master user.
+
+site:
+  site_id: site-at-vienna-home-001
+  country: Austria
+  site_type: private_home
+  postal_code: "1140"
+
+actors:
+  - actor_id: user-anna
+    actor_type: private_customer
+    role: master_user
+    name: Anna Hofer
+
+appliances:
+  - appliance_id: wm-at-001
+    model: ASKO-WM85C
+    connectivity_status: online
+    lifecycle_state: active_in_use
+    current_location: site-at-vienna-home-001
+
+contracts:
+  - contract_id: contract-at-master-001
+    contract_type: master
+    state: active
+    billed_to: user-anna
+    linked_appliance: wm-at-001
+    pricing_plan:
+      monthly_fee_eur: 24
+      price_per_cycle_eur: 1.2
+
+recent_events:
+  - kind: usage_event
+    usage_id: use-001
+    program_id: eco-40
+    duration_minutes: 98
+  - kind: usage_event
+    usage_id: use-002
+    program_id: mix-40
+    duration_minutes: 72
+
+open_items:
+  - type: sustainability_feedback
+    note: User wants clearer explanation of savings versus a standard domestic machine.
+
+candidate_views:
+  - appliance status card
+  - monthly cost summary
+  - sustainability feedback panel
+

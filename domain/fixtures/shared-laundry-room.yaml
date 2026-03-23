@@ -1,0 +1,86 @@
+scenario_id: shared-laundry-room-dk-001
+last_updated: 2026-03-22
+summary: Shared laundry room in a multi-apartment building with one master contract, visitor usage, and booking behavior.
+
+site:
+  site_id: site-dk-aarhus-laundry-001
+  country: Denmark
+  site_type: shared_laundry_room
+  postal_code: "8000"
+
+actors:
+  - actor_id: org-nordbo
+    actor_type: business_customer
+    role: building_operator
+    name: Nordbo Housing
+  - actor_id: user-lars
+    actor_type: private_customer
+    role: master_user
+    name: Lars Jensen
+  - actor_id: user-sara
+    actor_type: private_customer
+    role: visitor_user
+    name: Sara Madsen
+  - actor_id: user-emil
+    actor_type: private_customer
+    role: alias_user
+    name: Emil Rasmussen
+
+appliances:
+  - appliance_id: wm-dk-101
+    model: ASKO-WMC6763PC
+    connectivity_status: online
+    lifecycle_state: active_in_use
+    current_location: site-dk-aarhus-laundry-001
+  - appliance_id: wm-dk-102
+    model: ASKO-WMC8947PI
+    connectivity_status: online
+    lifecycle_state: active_in_use
+    current_location: site-dk-aarhus-laundry-001
+
+contracts:
+  - contract_id: contract-dk-master-001
+    contract_type: master
+    state: active
+    billed_to: org-nordbo
+    linked_appliance: wm-dk-101
+  - contract_id: contract-dk-visitor-014
+    contract_type: visitor
+    state: active
+    billed_to: user-sara
+
+access_assignments:
+  - user_id: user-sara
+    role: visitor
+    approval_status: not_required
+    billing_target: own_contract
+  - user_id: user-emil
+    role: alias
+    approval_status: pending
+    billing_target: master_contract
+
+recent_events:
+  - kind: booking
+    appliance_id: wm-dk-101
+    by_user: user-sara
+    status: confirmed
+  - kind: usage_event
+    usage_id: use-dk-777
+    appliance_id: wm-dk-101
+    billed_contract_id: contract-dk-visitor-014
+  - kind: usage_event
+    usage_id: use-dk-778
+    appliance_id: wm-dk-102
+    billed_contract_id: contract-dk-master-001
+
+open_items:
+  - type: access_request
+    note: Alias user Emil is waiting for master approval.
+  - type: billing_explanation
+    note: Operator wants clearer explanation of mixed visitor and master charges.
+
+candidate_views:
+  - room booking grid
+  - session start panel
+  - billing attribution review
+

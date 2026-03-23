@@ -1,0 +1,57 @@
+scenario_id: student-dorm-si-001
+last_updated: 2026-03-22
+summary: Student dorm with frequent shared use, missed pickups risk, and strong need for low-friction support.
+
+site:
+  site_id: site-si-velenje-dorm-001
+  country: Slovenia
+  site_type: student_dorm
+  postal_code: "3320"
+
+actors:
+  - actor_id: org-dorm
+    actor_type: business_customer
+    role: building_operator
+    name: Velenje Student Housing
+  - actor_id: log-001
+    actor_type: logistics_partner
+    role: logistics_partner
+    name: Local Service Logistics
+
+appliances:
+  - appliance_id: wm-si-210
+    model: ASKO-WMC6763PC
+    connectivity_status: online
+    lifecycle_state: active_in_use
+    current_location: site-si-velenje-dorm-001
+  - appliance_id: wm-si-211
+    model: ASKO-WMC6763PC
+    connectivity_status: offline
+    lifecycle_state: pickup_pending
+    current_location: site-si-velenje-dorm-001
+
+contracts:
+  - contract_id: contract-si-dorm-001
+    contract_type: master
+    state: termination_requested
+    billed_to: org-dorm
+
+recent_events:
+  - kind: usage_summary
+    appliance_id: wm-si-210
+    cycles_last_30_days: 188
+  - kind: pickup_attempt
+    appliance_id: wm-si-211
+    status: failed_no_access
+
+open_items:
+  - type: pickup_reschedule
+    note: Dorm manager missed agreed access window for pickup.
+  - type: trust_issue
+    note: Students want clearer explanation of what usage data is collected.
+
+candidate_views:
+  - shared-site operations board
+  - pickup and return workflow
+  - privacy and data explanation panel
+

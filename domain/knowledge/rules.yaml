@@ -1,0 +1,146 @@
+version: 0.1
+last_updated: 2026-03-22
+domain: recipss-laundry-service-operations
+
+rules:
+  - id: R1
+    label: OEM retains appliance ownership
+    evidence_level: source-backed
+    type: commercial
+    statement: The manufacturer keeps ownership of the washing machine and sells washing capability as a service rather than selling the asset.
+    implications:
+      - asset state must be modeled independently from customer status
+      - pickup, replacement, refurbishment, and redeployment are first-class workflows
+    source_refs:
+      - d5.1 background
+      - d5.3 business context
+
+  - id: R2
+    label: Contract and appliance linkage drives charging
+    evidence_level: source-backed
+    type: operational
+    statement: A master contract is linked to a delivered appliance, and the system must know which appliance is installed at which address to charge correctly.
+    implications:
+      - delivery and installation update both contract and appliance records
+      - address and asset linkage matter for operational views
+    source_refs:
+      - d5.1 contract execution
+      - d5.3 backend information model
+
+  - id: R3
+    label: Default usage is billed to the master contract
+    evidence_level: source-backed
+    type: billing
+    statement: Unless a visitor user is logged in, appliance usage is charged to the master contract.
+    implications:
+      - session identity affects billing target
+      - usage review UI must show who was billed and why
+    source_refs:
+      - d5.3 backend information model
+
+  - id: R4
+    label: Alias usage is billed to the master account
+    evidence_level: source-backed
+    type: billing
+    statement: Alias users can be approved to use the appliance, but their usage is billed on the master's account.
+    implications:
+      - access control and billing responsibility are not the same thing
+      - UI should separate permission from payment responsibility
+    source_refs:
+      - d5.1 user status definitions
+      - d5.3 backend information model
+
+  - id: R5
+    label: Appliance availability depends on local stock
+    evidence_level: source-backed
+    type: fulfillment
+    statement: Contract setup and appliance choice depend on country, postal code, and available stock in assigned logistics centers.
+    implications:
+      - onboarding UI needs eligibility and availability checks
+      - fixture scenarios should vary by geography and stock
+    source_refs:
+      - d5.1 contract preparation
+
+  - id: R6
+    label: Usage data is kept only as needed for billing unless anonymized by agreement
+    evidence_level: source-backed
+    type: privacy
+    statement: Usage information needed for billing may be stored until billing is complete, then purged or anonymized if the customer has agreed to broader use.
+    implications:
+      - privacy state is a domain concern
+      - analytics and sustainability features must respect consent
+    source_refs:
+      - d5.3 privacy and GDPR section
+
+  - id: R7
+    label: Maintenance can start from user, machine, or schedule
+    evidence_level: source-backed
+    type: service
+    statement: Service cases can be triggered by a user request, machine error code, predictive maintenance alert, or scheduled maintenance.
+    implications:
+      - maintenance queue needs trigger metadata
+      - case triage should preserve source of detection
+    source_refs:
+      - d5.1 maintenance and repair
+      - d5.3 key functionality
+
+  - id: R8
+    label: Contract termination requires asset recovery workflow
+    evidence_level: source-backed
+    type: recovery
+    statement: When a contract ends or is terminated, the appliance must be picked up, contract records updated, user data handled under GDPR, and the machine reset or refurbished.
+    implications:
+      - termination is not complete until asset recovery steps are done
+      - customer-facing and warehouse-facing states must be coordinated
+    source_refs:
+      - d5.1 contract termination
+      - d5.3 replacement and termination flow
+
+  - id: R9
+    label: Returned assets are inspected for redeployment or dismantling
+    evidence_level: source-backed
+    type: circularity
+    statement: Returned machines are checked, repaired, disinfected, and either marked available for another lifecycle or dismantled with reusable parts recovered.
+    implications:
+      - circularity state belongs in the operational model
+      - asset detail should expose prior and next lifecycle status
+    source_refs:
+      - d5.1 cleaning and repair
+      - d5.3 refurbishment goals
+
+  - id: R10
+    label: Shared settings require explicit session and access handling
+    evidence_level: source-backed
+    type: access
+    statement: Shared laundry rooms and similar sites can involve multiple users, reservations, QR-based appliance access, and role-based billing.
+    implications:
+      - shared context is not an edge case
+      - session start UI must bind user, appliance, and billing target
+    source_refs:
+      - d5.3 mobile application section
+      - d6.6 rollout scenarios
+
+  - id: R11
+    label: Retention and contract duration are critical business risks
+    evidence_level: source-backed
+    type: business-risk
+    statement: The duration of customer retention has major impact on economic success because revenue ramps slowly while asset and service costs are incurred early.
+    implications:
+      - renewal, satisfaction, and risk signals matter operationally
+      - domain fixtures should include churn-sensitive scenarios
+    source_refs:
+      - d6.6 executive summary
+      - d6.6 lessons learned
+
+  - id: R12
+    label: Pricing can be used to shape sustainable behavior
+    evidence_level: synthesis
+    type: sustainability
+    statement: The service can use differentiated pricing or feedback to reduce hot or excessive washing and improve environmental outcomes.
+    implications:
+      - sustainability feedback should connect to cost and behavior, not just information
+      - later experiments can test whether the UI should surface incentives directly
+    source_refs:
+      - d5.1 feedback section
+      - d6.6 environmental impact discussion
+

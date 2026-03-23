@@ -1,0 +1,17 @@
+{
+  "name": "human-agent-ui",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "npm@11.6.2",
+  "workspaces": [
+    "experiments/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "check": "npm run typecheck --workspaces --if-present",
+    "dev:json-render": "npm run dev --workspace @human-agent-ui/json-render-lab",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}
+

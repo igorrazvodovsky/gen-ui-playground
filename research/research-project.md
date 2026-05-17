@@ -4,7 +4,7 @@ Current software forces users to cobble together rigid, pre-built applications. 
 
 ## Solution
 
-Build a system that generates user interfaces from structured data, where the UI dynamically evolves with users' changing needs. The end-state is something like JELLY (Cao, Jiang & Xia, CHI 2025) — malleable, generative interfaces driven by task-driven data models that users can modify through natural language and direct manipulation. [[LAUI.pdf]]
+Build a system that generates user interfaces from structured data, where the UI dynamically evolves with users' changing needs. The end-state is malleable, generative interfaces driven by task-driven data models that users can modify through natural language and direct manipulation.
 
 ### The pipeline (target architecture)
 
@@ -39,7 +39,7 @@ Three note types, each with a different job:
 
 1. **Literature notes** (`sources/`) — per-paper. Quick reference: what the paper argues, its approach, key terms. Factual, not interpretive. Receipts.
 2. **Concept notes** (`concepts/`) — atomic, one idea per note. Stated in own words. Links back to source papers and forward to related concepts. This is where understanding compounds.
-3. **Synthesis doc** (`[[_synthesis]]`) — curated trail through the concept notes. The evolving model of how generative UI works.
+3. **Synthesis doc** (`[[synthesis]]`) — curated trail through the concept notes. The evolving model of how generative UI works.
 
 Workflow per paper:
 1. Read the paper, create a literature note (slim — core idea, key concepts, technical approach)
@@ -51,7 +51,7 @@ Workflow per paper:
    - Add connections in both directions (e.g., if "pattern composition" relates to "UI composition", update both notes)
    - Add new insights from this paper to existing concepts where relevant (update "Relevance to project" or "Context" sections)
 5. **Check for practical implementations** — for each concept, ask: "What real-world systems, tools, or frameworks implement this?" Connect theoretical concepts to production systems (e.g., pattern libraries → design systems, reactive programming → frameworks like React/Solid, data models → schema libraries). Add these connections to concept notes.
-6. Update `[[_synthesis]]` — what shifted, what connected, what's still missing, what practical bridges exist
+6. Update `[[synthesis]]` — what shifted, what connected, what's still missing, what practical bridges exist
 7. Use gap map to find the next paper when the queue runs dry
 
 **The Zettelkasten method only works if concepts actively link together**. This isn't optional — it's the core mechanism. Isolated notes are just a pile of documents.
@@ -60,14 +60,14 @@ Workflow per paper:
 
 ```
 /
-├── project.md              ← this file
+├── research-project.md     ← this file
 ├── reading-order.md        ← proposed sequence of 19 papers
-├── solution tree.md           ← opportunity solution tree (opportunities, solutions, experiments)
+├── solution tree.md        ← opportunity solution tree (opportunities, solutions, experiments)
 ├── synthesis.md            ← living synthesis, curates concept notes
-├── templates/paper.md       ← template for literature notes
-├── templates/concept.md     ← template for concept notes
-├── concepts/                ← atomic idea notes (Zettelkasten)
-└── sources/                 ← PDFs, literature notes, images
+├── templates/paper.md      ← template for literature notes
+├── templates/concept.md    ← template for concept notes
+├── concepts/               ← atomic idea notes (Zettelkasten)
+└── sources/                ← PDFs, literature notes, images
 ```
 
 ## Key files
